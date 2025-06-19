@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+<modelVersion>4.0.0</modelVersion>
+<groupId>org.example</groupId>
+<artifactId>hospII</artifactId>
+<version>1.0-SNAPSHOT</version>
+
+<properties>
+    <maven.compiler.source>24</maven.compiler.source>
+    <maven.compiler.target>24</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+
+<dependencies>
+    <!-- Hibernate Core -->
+    <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-core</artifactId>
+        <version>5.6.15.Final</version>
+    </dependency>
+
+    <!-- PostgreSQL JDBC Driver -->
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.5.4</version>
+    </dependency>
+
+    <!-- Logging (SLF4J + Log4j binding) -->
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>1.7.36</version>
+    </dependency>
+    <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>1.7.36</version>
+    </dependency>
+</dependencies>
+
+<build>
+    <plugins>
+        <!-- Build an executable JAR with all dependencies -->
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <version>3.4.2</version>
+            <configuration>
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+                <archive>
+                    <manifest>
+                        <mainClass>com.hospitalle.Main</mainClass> <!-- Change to your actual class -->
+                    </manifest>
+                </archive>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>make-jar</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+</project>
