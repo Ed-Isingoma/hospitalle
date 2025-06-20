@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+
+        <!-- JDBC Settings -->
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/hospital</property>
+        <property name="hibernate.connection.username">aed</property>
+        <property name="hibernate.connection.password">aedgar</property>
+
+        <!-- Hibernate Settings -->
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQL95Dialect</property>
+        <property name="hibernate.show_sql">false</property> <!-- turn to true to see sql command in console -->
+        <property name="hibernate.format_sql">true</property>
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+        <mapping class="com.hospitalle.models.Auth"/>
+        <mapping class="com.hospitalle.models.PatientData"/>
+        <mapping class="com.hospitalle.models.Admission"/>
+        <mapping class="com.hospitalle.models.Payment"/>
+        <mapping class="com.hospitalle.models.Appointment"/>
+        <mapping class="com.hospitalle.models.Availability"/>
+        <mapping class="com.hospitalle.models.Speciality"/>
+
+    </session-factory>
+</hibernate-configuration>
