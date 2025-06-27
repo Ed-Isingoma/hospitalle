@@ -1,6 +1,7 @@
 package com.hospitalle.models;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name="Authentications")
@@ -8,20 +9,51 @@ public class Auth {
     @Id @GeneratedValue
     private Long id;
     private String username, email, password, role;
+    private boolean deleted;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Speciality> specialities;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<Availability> availabilities;
+
+    public List<Speciality> getSpecialities() {
+        return specialities;
+    }
+
+    public void setSpecialities(List<Speciality> specialities) {
+        this.specialities = specialities;
+    }
+
+    public List<Availability> getAvailabilities() {
+        return availabilities;
+    }
+
+    public void setAvailabilities(List<Availability> availabilities) {
+        this.availabilities = availabilities;
+    }
 
     public Long getId() {
         return id;
     }
 
-    public String getUserName() {
+    public String getUsername() {
         return username;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setUserName(String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 

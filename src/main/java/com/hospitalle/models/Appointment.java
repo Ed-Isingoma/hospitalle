@@ -1,6 +1,7 @@
 package com.hospitalle.models;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name="Appointment")
@@ -8,6 +9,7 @@ public class Appointment {
     @Id @GeneratedValue
     private Long id;
     private String symptoms, patient_feedback, diagnosis, prescription;
+    private boolean accepted;
 
     @ManyToOne @JoinColumn(name="patient")
     private Auth patient;
@@ -15,9 +17,16 @@ public class Appointment {
     @ManyToOne @JoinColumn(name="speciality")
     private Speciality speciality;
 
+    @OneToMany(mappedBy = "appointment")
+    private List<Availability> availabilities;
+
     public Long getId() {
         return id;
     }
+
+    public boolean getAccepted() { return accepted; }
+
+    public void setAccepted(boolean accepted) { this.accepted = accepted;}
 
     public String getSymptoms() {
         return symptoms;
