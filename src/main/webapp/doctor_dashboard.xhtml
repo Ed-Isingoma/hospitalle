@@ -1,0 +1,99 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Doctor Dashboard | Hospitalle</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+</h:head>
+<h:body class="p-6 bg-gray-50 min-h-screen">
+    <h:form>
+
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6">
+        <h:outputText value="Hello, Dr. #{doctorBean.me.username}" styleClass="text-2xl font-bold"/>
+        <div class="space-x-2">
+            <p:commandButton icon="pi pi-plus" title="Add Availability" oncomplete="PF('dlgAdd').show()" process="@this"/>
+            <p:commandButton icon="pi pi-cog" title="Specialities" oncomplete="PF('dlgSpec').show()" process="@this"/>
+        </div>
+        </div>
+    </h:form>
+
+    <!-- Appointments -->
+    <div class="max-w-[1000px] mx-auto overflow-auto bg-white p-4 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-2">Appointments</h3>
+        <p:dataTable styleClass="w-full" value="#{doctorBean.appts}" var="apt" emptyMessage="No appointments yet">
+            <p:column headerText="When">#{apt.startTime} – #{apt.endTime}</p:column>
+            <p:column headerText="Patient">#{apt.patient.username}</p:column>
+            <p:column headerText="Symptoms">#{apt.symptoms}</p:column>
+            <p:column headerText="Diagnosis">#{apt.diagnosis}</p:column>
+            <p:column headerText="Prescription">#{apt.prescription}</p:column>
+            <p:column headerText="Speciality">#{apt.speciality.name}</p:column>
+        </p:dataTable>
+    </div>
+
+    <!-- Future Availabilities -->
+    <div class="mb-8 bg-white p-4 rounded-lg shadow">
+        <h3 class="text-xl font-semibold mb-2">Future Availabilities</h3>
+        <p:dataTable value="#{doctorBean.futureSlots}" var="slot" emptyMessage="No free slots">
+            <p:column headerText="From">#{slot.startTime}</p:column>
+            <p:column headerText="To">#{slot.endTime}</p:column>
+        </p:dataTable>
+    </div>
+
+    <!-- Add Availability Dialog -->
+    <p:dialog header="Add Availability" widgetVar="dlgAdd" modal="true" resizable="false">
+        <h:form>
+            <div class="space-y-4">
+                <p:calendar id="start" value="#{doctorBean.newStart}" showTime="true"
+                            pattern="yyyy-MM-dd HH:mm" placeholder="Start"/>
+                <p:calendar id="end"   value="#{doctorBean.newEnd}" showTime="true"
+                            pattern="yyyy-MM-dd HH:mm" placeholder="End"/>
+            </div>
+            <div class="mt-4 flex justify-end space-x-2">
+                <p:commandButton value="Cancel" onclick="PF('dlgAdd').hide()" type="button"/>
+                <p:commandButton value="Save" actionListener="#{doctorBean.addSlot}" update="@form"
+                                 oncomplete="PF('dlgAdd').hide()"/>
+            </div>
+        </h:form>
+    </p:dialog>
+
+    <!-- Specialities Dialog -->
+    <p:dialog header="Manage Specialities" widgetVar="dlgSpec" modal="true" resizable="false" style="width:600px">
+        <h:form id="specForm">
+            <p:dataTable value="#{doctorBean.specialities}" var="s" editable="true">
+                <p:column headerText="Name">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{s.name}"/></f:facet>
+                        <f:facet name="input"><p:inputText value="#{s.name}"/></f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Hourly Price">
+                    <p:cellEditor>
+                        <f:facet name="output"><h:outputText value="#{s.hourlyPrice}"/></f:facet>
+                        <f:facet name="input"><p:inputText value="#{s.hourlyPrice}"/></f:facet>
+                    </p:cellEditor>
+                </p:column>
+                <p:column headerText="Actions">
+                    <p:commandButton icon="pi pi-trash" title="Remove"
+                                     actionListener="#{doctorBean.removeSpeciality(s)}"
+                                     update="specForm" process="@this"/>
+                </p:column>
+            </p:dataTable>
+
+            <div class="mt-4 flex space-x-2 items-center">
+                <p:inputText placeholder="New speciality" value="#{doctorBean.newSpec.name}"/>
+                <p:inputText placeholder="Price" value="#{doctorBean.newSpec.hourlyPrice}"/>
+                <p:commandButton value="Add" actionListener="#{doctorBean.addSpeciality}"
+                                 update="specForm" process="@this"/>
+            </div>
+
+            <div class="mt-4 text-right space-x-2">
+                <p:commandButton value="Close" onclick="PF('dlgSpec').hide()" type="button"/>
+                <p:commandButton value="Save All" actionListener="#{doctorBean.saveSpecialities}"
+                                 update="specForm" oncomplete="PF('dlgSpec').hide()"/>
+            </div>
+        </h:form>
+    </p:dialog>
+</h:body>
+</html>
