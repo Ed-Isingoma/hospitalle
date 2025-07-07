@@ -1,0 +1,77 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>Login | Hospitalle</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+</h:head>
+
+<h:body class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full mb-4 shadow-lg">
+                <i class="fas fa-hospital text-white text-2xl"> </i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Welcome to Hospitalle</h1>
+            <p class="text-gray-600">Please sign in to your account</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
+            <h:form>
+                <p:messages autoUpdate="true" closable="true" styleClass="mb-6"/>
+                <div class="space-y-6">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        </div>
+                        <p:inputText id="user"
+                                     value="#{loginBean.username}"
+                                     placeholder="Enter your username"
+                                     required="true"
+                                     requiredMessage="Username is required"
+                                     styleClass="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"/>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        </div>
+                        <p:password id="pass"
+                                    value="#{loginBean.password}"
+                                    placeholder="Enter your password"
+                                    required="true"
+                                    requiredMessage="Password is required"
+                                    feedback="false"
+                                    styleClass="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"/>
+                    </div>
+                </div>
+                <div class="mt-8 space-y-4">
+                    <p:commandButton value="Sign In"
+                                     action="#{loginBean.login}"
+                                     ajax="false"
+                                     styleClass="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg shadow-lg hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    </p:commandButton>
+                    <div class="text-center">
+                        <span class="text-gray-500">Don't have an account?</span>
+                    </div>
+                    <p:commandButton value="Create Account" action="register.xhtml?faces-redirect=true"
+                                     ajax="false" immediate="true"
+                                     styleClass="w-full py-3 px-4 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 hover:border-blue-400 hover:text-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    </p:commandButton>
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="#" class="text-sm text-blue-600 hover:text-blue-800 hover:underline">
+                        <i class="fas fa-question-circle mr-1"> </i>
+                        Forgot your password?
+                    </a>
+                </div>
+            </h:form>
+        </div>
+        <div class="text-center mt-8 text-gray-500 text-sm">
+            <div class="flex items-center justify-center space-x-4">
+                <i class="fas fa-shield-alt"> </i>
+                <span>Secure Healthcare Management</span>
+            </div>
+            <p class="mt-2">© 2024 Hospitalle. All rights reserved.</p>
+        </div>
+    </div>
+</h:body>
+</html>

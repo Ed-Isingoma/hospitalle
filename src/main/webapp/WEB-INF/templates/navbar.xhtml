@@ -1,0 +1,229 @@
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:h="http://xmlns.jcp.org/jsf/html"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+    <h:form id="navForm">
+        <nav style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    z-index: 1000;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                    backdrop-filter: blur(10px);">
+            <div style="max-width: 1200px;
+                       margin: 0 auto;
+                       padding: 0 2rem;
+                       display: flex;
+                       justify-content: space-between;
+                       align-items: center;
+                       height: 70px;">
+
+                <h:link outcome="/patient_dashboard.xhtml"
+                        style="color: white;
+                               font-size: 1.8rem;
+                               font-weight: 700;
+                               text-decoration: none;
+                               display: flex;
+                               align-items: center;
+                               transition: all 0.3s ease;">
+                    <i class="fas fa-hospital-alt" style="margin-right: 0.5rem; font-size: 1.5rem;"> </i>
+                    Hospitalle
+                </h:link>
+
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                        <p:commandLink action="#{patientBean.logout}"
+                                       value="Log Out"
+                                       style="color: rgba(255,255,255,0.9);
+                          font-size: 1.1rem;
+                          font-weight: 500;
+                          text-decoration: none;
+                          padding: 0.5rem 1rem;
+                          border-radius: 8px;
+                          transition: all 0.3s ease;
+                          background: rgba(255,255,255,0.1);">
+                            <i class="fas fa-sign-out-alt" style="margin-right: 0.5rem;"> </i>
+                        </p:commandLink>
+
+                    <p:commandButton type="button"
+                                     icon="fas fa-user-circle"
+                                     value="Edit Account"
+                                     onclick="PF('accDlg').show()"
+                                     style="background: rgba(255,255,255,0.2);
+                                            color: white;
+                                            border: 2px solid rgba(255,255,255,0.3);
+                                            padding: 0.6rem 1.2rem;
+                                            border-radius: 25px;
+                                            font-weight: 600;
+                                            font-size: 0.95rem;
+                                            cursor: pointer;
+                                            transition: all 0.3s ease;
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 0.5rem;"
+                                     onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0,0,0,0.2)'"
+                                     onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'; this.style.boxShadow='none'"/>
+                </div>
+            </div>
+        </nav>
+
+        <div style="height: 80px;"> </div>
+
+        <p:dialog widgetVar="accDlg"
+                  header="Edit Your Account"
+                  modal="true"
+                  resizable="false"
+                  draggable="false"
+                  width="500px"
+                  style="border-radius: 15px; overflow: hidden;"
+                  contentStyle="padding: 2rem; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="currentEmail" style="font-weight: 600; color: #374151; font-size: 0.95rem;">
+                        <i class="fas fa-envelope" style="margin-right: 0.5rem; color: #6366f1;"> </i>
+                        Current Email
+                    </label>
+                    <p:inputText id="currentEmail"
+                                 value="#{patientBean.me.email}"
+                                 readonly="true"
+                                 style="width: 100%;
+                                        padding: 0.8rem;
+                                        border: 2px solid #e5e7eb;
+                                        border-radius: 10px;
+                                        background: #f9fafb;
+                                        color: #6b7280;
+                                        font-size: 0.95rem;"/>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="newEmail" style="font-weight: 600; color: #374151; font-size: 0.95rem;">
+                        <i class="fas fa-at" style="margin-right: 0.5rem; color: #10b981;"> </i>
+                        New Email
+                    </label>
+                    <p:inputText id="newEmail"
+                                 value="#{patientBean.newEmail}"
+                                 requiredMessage="Please enter a new email"
+                                 style="width: 100%;
+                                        padding: 0.8rem;
+                                        border: 2px solid #d1d5db;
+                                        border-radius: 10px;
+                                        font-size: 0.95rem;
+                                        transition: border-color 0.3s ease;"
+                                 onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                 onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"/>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="currentPass" style="font-weight: 600; color: #374151; font-size: 0.95rem;">
+                        <i class="fas fa-lock" style="margin-right: 0.5rem; color: #f59e0b;"> </i>
+                        Current Password
+                    </label>
+                    <p:password id="currentPass"
+                                value="#{patientBean.currentPassword}"
+                                feedback="false"
+                                requiredMessage="Please enter your current password"
+                                style="width: 100%;
+                                       padding: 0.8rem;
+                                       border: 2px solid #d1d5db;
+                                       border-radius: 10px;
+                                       font-size: 0.95rem;
+                                       transition: border-color 0.3s ease;"
+                                onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"/>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="newPass" style="font-weight: 600; color: #374151; font-size: 0.95rem;">
+                        <i class="fas fa-key" style="margin-right: 0.5rem; color: #8b5cf6;"> </i>
+                        New Password
+                    </label>
+                    <p:password id="newPass"
+                                value="#{patientBean.newPassword}"
+                                feedback="true"
+                                requiredMessage="Please enter a new password"
+                                style="width: 100%;
+                                       padding: 0.8rem;
+                                       border: 2px solid #d1d5db;
+                                       border-radius: 10px;
+                                       font-size: 0.95rem;
+                                       transition: border-color 0.3s ease;"
+                                onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"/>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <label for="confirmPass" style="font-weight: 600; color: #374151; font-size: 0.95rem;">
+                        <i class="fas fa-shield-alt" style="margin-right: 0.5rem; color: #ef4444;"> </i>
+                        Confirm New Password
+                    </label>
+                    <p:password id="confirmPass"
+                                value="#{patientBean.confirmNewPassword}"
+                                feedback="false"
+                                requiredMessage="Please confirm your new password"
+                                validator="#{patientBean.validatePasswordConfirmation}"
+                                validatorMessage="Passwords must match"
+                                style="width: 100%;
+                                       padding: 0.8rem;
+                                       border: 2px solid #d1d5db;
+                                       border-radius: 10px;
+                                       font-size: 0.95rem;
+                                       transition: border-color 0.3s ease;"
+                                onfocus="this.style.borderColor='#6366f1'; this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.1)'"
+                                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"/>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem; background: rgba(239,68,68,0.1); border-radius: 10px; border: 1px solid rgba(239,68,68,0.2);">
+                    <p:selectBooleanCheckbox id="deleteChk"
+                                             value="#{patientBean.deleteAccount}"
+                                             style="margin-right: 0.5rem;"/>
+                    <label for="deleteChk" style="color: #dc2626; font-weight: 600; font-size: 0.95rem;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"> </i>
+                        Mark account for deletion
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb;">
+                    <p:commandButton value="Save Changes"
+                                     icon="fas fa-save"
+                                     action="#{patientBean.editProfile}"
+                                     update=":mainForm navForm"
+                                     oncomplete="PF('accDlg').hide()"
+                                     style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                            color: white;
+                                            border: none;
+                                            padding: 0.8rem 1.5rem;
+                                            border-radius: 10px;
+                                            font-weight: 600;
+                                            font-size: 0.95rem;
+                                            cursor: pointer;
+                                            transition: all 0.3s ease;
+                                            box-shadow: 0 4px 15px rgba(16,185,129,0.3);"
+                                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(16,185,129,0.4)'"
+                                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(16,185,129,0.3)'"/>
+
+                    <p:commandButton value="Delete Account"
+                                     icon="fas fa-trash"
+                                     action="#{patientBean.deleteAccount}"
+                                     update=":mainForm navForm"
+                                     oncomplete="PF('accDlg').hide()"
+                                     style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                                            color: white;
+                                            border: none;
+                                            padding: 0.8rem 1.5rem;
+                                            border-radius: 10px;
+                                            font-weight: 600;
+                                            font-size: 0.95rem;
+                                            cursor: pointer;
+                                            transition: all 0.3s ease;
+                                            box-shadow: 0 4px 15px rgba(239,68,68,0.3);"
+                                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(239,68,68,0.4)'"
+                                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(239,68,68,0.3)'"/>
+                </div>
+            </div>
+        </p:dialog>
+    </h:form>
+</ui:composition>
