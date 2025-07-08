@@ -6,18 +6,18 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:head>
     <title>Patient Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.5.4/dist/tailwind.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
-<!--    <script src="https://cdn.tailwindcss.com"></script>-->
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </h:head>
 <h:body class="bg-gray-50 min-h-screen">
 
-    <ui:include src="./WEB-INF/templates/navbar.xhtml"/>
+    <ui:include src="./WEB-INF/templates/navbar.xhtml" />
 
     <div class="container mx-auto p-6 space-y-8">
         <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
             <div class="flex items-center space-x-4">
                 <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-md text-2xl text-white"> </i>
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold">Welcome Back!</h1>
@@ -30,348 +30,437 @@
                         styleClass="mb-6"/>
 
             <h:panelGroup layout="block" style="padding: 2rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
-                <i class="fas fa-user-md" style="color: #4f46e5; margin-right: 0.5rem;"> </i>
-                Our Doctors
-            </h2>
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
+                    <i class="fas fa-user-md" style="color: #4f46e5; margin-right: 0.5rem;"> </i>
+                    Our Doctors
+                </h2>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
-                <ui:repeat value="#{patientBean.doctors}" var="doctor">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <ui:repeat value="#{patientBean.doctors}" var="doctor">
 
-                    <p:commandLink styleClass="block focus:outline-none"
-                            oncomplete="PF('docDlg').show()">
+                        <p:commandLink styleClass="block focus:outline-none"
+                                       process="@this"
+                                       update=":bookingForm:dlg
+                                       :bookingForm:specialitySel
+                                       :bookingForm:slotSel"
+                                       actionListener="#{patientBean.prepareForBooking(doctor)}"
+                                       oncomplete="PF('dlg').show()">
 
-                        <f:setPropertyActionListener
-                                target="#{patientBean.selectedDoctor}"
-                                value="#{doctor}" />
-
-                    <div style="background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center;">
-                        <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 0.5rem;"> </i>
-                        <span style="font-weight: 600; color: #1f2937;">#{doctor.username}</span>
-                        <ul class="space-y-1">
-                            <ui:repeat value="#{doctor.specialities}" var="spec">
-                                <li class="text-sm text-gray-600 flex items-center">
-                                    <i class="fas fa-check-circle text-green-400 mr-2"> </i>
-                                    #{spec.name}
-                                </li>
-                            </ui:repeat>
-                        </ul>
-                        <span style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">#{doctor.email}</span>
-                    </div>
-                    </p:commandLink>
-                </ui:repeat>
-            </div>
-        </h:panelGroup>
-
-        <h:panelGroup layout="block" style="padding: 2rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
-                <i class="fas fa-table" style="color: #059669; margin-right: 0.5rem;"> </i>
-                Your Information
-            </h2>
-
-            <p:accordionPanel multiple="true" styleClass="shadow-md rounded-xl border border-gray-200">
-                <p:tab title="Pending Appointment Requests">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div class="bg-amber-50 border-b border-amber-100 px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-clock text-white"> </i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-800">Pending Requests</h2>
-                                    <p class="text-sm text-gray-600">Appointments awaiting approval</p>
-                                </div>
-                            </div>
+                        <div style="background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center;">
+                            <i class="fas fa-user-circle" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 0.5rem;"> </i>
+                            <span style="font-weight: 600; color: #1f2937;">#{doctor.username}</span>
+                            <ul class="space-y-1">
+                                <ui:repeat value="#{doctor.specialities}" var="spec">
+                                    <li class="text-sm text-gray-600 flex items-center">
+                                        <i class="fas fa-check-circle text-green-400 mr-2"> </i>
+                                        #{spec.name}
+                                    </li>
+                                </ui:repeat>
+                            </ul>
+                            <span style="font-size: 0.85rem; color: #9ca3af; margin-top: 0.25rem;">#{doctor.email}</span>
                         </div>
-                        <div class="p-6">
-                            <p:dataTable var="appt"
-                                         value="#{patientBean.pendingAppts}"
-                                         id="pendingTable"
-                                         rowKey="#{appt.id}"
-                                         emptyMessage="No pending requests"
-                                         styleClass="w-full"
-                                         paginator="true"
-                                         rows="5">
-                                <p:column headerText="Date And Time" styleClass="font-medium">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-calendar-alt text-blue-500"> </i>
-                                        <div>
-                                            <h:outputText value="#{appt.startTime}">
-                                                <f:convertDateTime pattern="MMM dd, yyyy" />
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText value="#{appt.startTime}" styleClass="text-sm text-gray-500">
-                                                <f:convertDateTime pattern="hh:mm a" />
-                                            </h:outputText>
-                                        </div>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Symptoms">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-notes-medical text-red-500"> </i>
-                                        <span class="text-sm">#{appt.symptoms}</span>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Speciality">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-stethoscope text-green-500"> </i>
-                                        <span class="font-medium text-green-700">#{appt.speciality.name}</span>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Status">
-                            <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                <i class="fas fa-hourglass-half mr-1"> </i>
-                                Awaiting approval
-                            </span>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </div>
-                </p:tab>
-
-                <p:tab title="Upcoming Appointments">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div class="bg-green-50 border-b border-green-100 px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-calendar-check text-white"> </i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
-                                    <p class="text-sm text-gray-600">Your confirmed appointments</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <p:dataTable var="appt"
-                                         value="#{patientBean.upcomingAcceptedAppts}"
-                                         id="upcomingTable"
-                                         emptyMessage="No upcoming appointments"
-                                         styleClass="w-full"
-                                         paginator="true"
-                                         rows="5">
-                                <p:column headerText="Date And Time" styleClass="font-medium">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-calendar-alt text-blue-500"> </i>
-                                        <div>
-                                            <h:outputText value="#{appt.startTime}">
-                                                <f:convertDateTime pattern="MMM dd, yyyy" />
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText value="#{appt.startTime}" styleClass="text-sm text-gray-500">
-                                                <f:convertDateTime pattern="hh:mm a" />
-                                            </h:outputText>
-                                        </div>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Doctor">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-user-md text-blue-500"> </i>
-                                        <span class="font-medium text-blue-700">Dr. #{appt.speciality.doctor.username}</span>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Speciality">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-stethoscope text-green-500"> </i>
-                                        <span class="font-medium text-green-700">#{appt.speciality.name}</span>
-                                    </div>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </div>
-                </p:tab>
-
-                <p:tab title="Previous Appointments">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div class="bg-purple-50 border-b border-purple-100 px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-history text-white"> </i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-800">Previous Appointments</h2>
-                                    <p class="text-sm text-gray-600">Click the edit icon to add your feedback</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <p:dataTable var="appt"
-                                         value="#{patientBean.pastAcceptedAppts}"
-                                         id="pastTable"
-                                         rowKey="#{appt.id}"
-                                         editable="true"
-                                         editMode="row"
-                                         styleClass="w-full"
-                                         paginator="true"
-                                         rows="5">
-
-                                <p:ajax event="rowEdit"
-                                        listener="#{patientBean.saveUpdatedAppt}"
-                                        update="mainForm:msgs" />
-
-                                <p:column headerText="Date And Time" styleClass="font-medium">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-calendar-alt text-blue-500"> </i>
-                                        <div>
-                                            <h:outputText value="#{appt.startTime}">
-                                                <f:convertDateTime pattern="MMM dd, yyyy" />
-                                            </h:outputText>
-                                            <br/>
-                                            <h:outputText value="#{appt.startTime}" styleClass="text-sm text-gray-500">
-                                                <f:convertDateTime pattern="hh:mm a" />
-                                            </h:outputText>
-                                        </div>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Doctor">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-user-md text-blue-500"> </i>
-                                        <span class="font-medium text-blue-700">Dr. #{appt.speciality.doctor.username}</span>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Your Feedback">
-                                    <p:cellEditor>
-                                        <f:facet name="output">
-                                            <div class="flex items-start space-x-2">
-                                                <i class="fas fa-comment-alt text-gray-400 mt-1"> </i>
-                                                <span class="text-sm">#{appt.patientFeedback}</span>
-                                            </div>
-                                        </f:facet>
-                                        <f:facet name="input">
-                                            <p:inputTextarea value="#{appt.patientFeedback}"
-                                                             autoResize="false"
-                                                             rows="3"
-                                                             placeholder="Share your experience..."
-                                                             styleClass="w-full p-2 border rounded-lg" />
-                                        </f:facet>
-                                    </p:cellEditor>
-                                </p:column>
-                                <p:column style="width:4em" headerText="Actions">
-                                    <p:rowEditor />
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </div>
-                </p:tab>
-                <p:tab title="Admissions">
-                    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div class="bg-red-50 border-b border-red-100 px-6 py-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-bed text-white"> </i>
-                                </div>
-                                <div>
-                                    <h2 class="text-xl font-bold text-gray-800">Admission History</h2>
-                                    <p class="text-sm text-gray-600">Your hospital stay records</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-6">
-                            <p:dataTable var="adm"
-                                         value="#{patientBean.admissions}"
-                                         id="admissionTable"
-                                         emptyMessage="No admissions found"
-                                         styleClass="w-full"
-                                         paginator="true"
-                                         rows="5">
-                                <p:column headerText="Date Admitted">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-sign-in-alt text-green-500"> </i>
-                                        <h:outputText value="#{adm.startTime}">
-                                            <f:convertDateTime pattern="MMM dd, yyyy hh:mm a" />
-                                        </h:outputText>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Date Discharged">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-sign-out-alt text-blue-500"> </i>
-                                        <h:outputText value="#{adm.dischargeDate}">
-                                            <f:convertDateTime pattern="MMM dd, yyyy hh:mm a" />
-                                        </h:outputText>
-                                    </div>
-                                </p:column>
-                                <p:column headerText="Ward/Reason">
-                                    <div class="flex items-center space-x-2">
-                                        <i class="fas fa-hospital text-purple-500"> </i>
-                                        <span class="font-medium">#{adm.ward}</span>
-                                    </div>
-                                </p:column>
-                            </p:dataTable>
-                        </div>
-                    </div>
-
-                </p:tab>
-            </p:accordionPanel>
-        </h:panelGroup>
-
-
-        <p:dialog widgetVar="docDlg"
-              header="Book Appointment"
-              modal="true"
-              resizable="false"
-                  id="docDlg"
-              width="600px"
-              styleClass="rounded-xl">
-        <div class="space-y-6">
-            <div class="bg-blue-50 rounded-lg p-4">
-                <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user-md text-white text-xl"> </i>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-gray-800">Dr. #{patientBean.selectedDoctor.username}</h3>
-                        <p class="text-blue-600">Medical Specialist</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-green-50 rounded-lg p-4">
-                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                    <i class="fas fa-tags text-green-500 mr-2"> </i>
-                    Specialities &amp; Pricing
-                </h4>
-                <div class="grid grid-cols-1 gap-2">
-                    <ui:repeat value="#{patientBean.selectedDoctor.specialities}" var="sp">
-                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-green-200">
-                            <span class="font-medium text-gray-700">#{sp.name}</span>
-                            <span class="text-green-600 font-bold">UGX #{sp.hourlyPrice}</span>
-                        </div>
+                        </p:commandLink>
                     </ui:repeat>
                 </div>
-            </div>
+            </h:panelGroup>
 
-            <div class="bg-purple-50 rounded-lg p-4">
-                <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                    <i class="fas fa-clock text-purple-500 mr-2"> </i>
-                    Available Time Slots
-                </h4>
-                <p:selectOneRadio value="#{patientBean.newApptAvailability}"
-                                  layout="grid"
-                                  columns="1"
-                                  styleClass="space-y-2">
-                    <f:selectItems value="#{patientBean.selectedDoctor.availabilities}"
-                                   var="av"
-                                   itemLabel="#{av.startTime} - #{av.endTime}"
-                                   itemValue="#{av}" />
-                </p:selectOneRadio>
-            </div>
+            <h:panelGroup id="yourInfoPanel" layout="block" style="padding: 2rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
+                    <i class="fas fa-table" style="color: #059669; margin-right: 0.5rem;"> </i>
+                    Your Information
+                </h2>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end space-x-3 pt-4 border-t">
-                <p:commandButton value="Cancel"
-                                 oncomplete="PF('docDlg').hide()"
-                                 styleClass="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"/>
-                <p:commandButton value="Book Appointment"
-                                 action="#{patientBean.newAppointment}"
-                                 oncomplete="PF('docDlg').hide()"
-                                 update="mainForm:msgs :mainForm"
-                                 styleClass="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition duration-200">
-                    <i class="fas fa-calendar-plus mr-2"> </i>
-                </p:commandButton>
-            </div>
-        </div>
-    </p:dialog>
-    </h:form>
-</div>
+                <p:accordionPanel id="appointmentsAccordion" multiple="true" styleClass="shadow-md rounded-xl border border-gray-200">
+                    <p:tab title="Pending Appointment Requests" id="pendingAppts">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-amber-50 border-b border-amber-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Pending Requests</h2>
+                                        <p class="text-sm text-gray-600">Appointments awaiting approval</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{patientBean.pendingAppts}"
+                                             id="pendingTable"
+                                             rowKey="#{appt.id}"
+                                             emptyMessage="No pending requests"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             rows="5">
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{patientBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{patientBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-stethoscope text-green-500"> </i>
+                                            <span class="font-medium text-green-700">#{appt.speciality}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-notes-medical text-red-500"> </i>
+                                            <span class="text-sm">#{appt.doctor}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Status">
+                                <span class="inline-flex px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                    <i class="fas fa-hourglass-half mr-1"> </i>
+                                    Awaiting approval
+                                </span>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Upcoming Appointments">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-green-50 border-b border-green-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-calendar-check text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
+                                        <p class="text-sm text-gray-600">Your confirmed appointments</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{patientBean.upcomingAcceptedAppts}"
+                                             id="upcomingTable"
+                                             emptyMessage="No upcoming appointments"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             rows="5">
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{patientBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{patientBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-stethoscope text-green-500"> </i>
+                                            <span class="font-medium text-green-700">#{appt.speciality}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-user-md text-blue-500"> </i>
+                                            <span class="font-medium text-blue-700">Dr. #{appt.doctor}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-money-bill-wave text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{patientBean.formatMoney(appt.bill)}</span>
+                                        </div>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Previous Appointments">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-purple-50 border-b border-purple-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-history text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Previous Appointments</h2>
+                                        <p class="text-sm text-gray-600">Click the edit icon to add your feedback</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{patientBean.pastAcceptedAppts}"
+                                             id="pastTable"
+                                             rowKey="#{appt.id}"
+                                             editable="true"
+                                             editMode="row"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             rows="5">
+
+                                    <p:ajax event="rowEdit"
+                                            listener="#{patientBean.savePatientFeedback}"
+                                            update="mainForm:msgs" />
+
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{patientBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{patientBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Doctor">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-user text-blue-500"> </i>
+                                            <span class="font-medium text-blue-700">Dr. #{appt.doctor}</span>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Diagnosis">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-notes-medical text-blue-500"> </i>
+
+                                            <h:panelGroup rendered="#{appt.diagnosis != null}" layout="inline">
+                                                <span class="font-medium text-blue-700">#{appt.diagnosis}</span>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{appt.diagnosis == null}" layout="inline">
+                                                <span class="italic text-gray-500">Not yet set</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Prescriptions">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-pills text-blue-500"> </i>
+                                            <h:panelGroup rendered="#{appt.prescription != null}" layout="inline">
+                                                <span class="font-medium text-blue-700">#{appt.prescription}</span>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{appt.prescription == null}" layout="inline">
+                                                <span class="italic text-gray-500">Not yet set</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Your Feedback">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <div class="flex items-start space-x-2">
+                                                    <i class="fas fa-comment-alt text-gray-400 mt-1"> </i>
+                                                    <span class="text-sm">#{appt.patientFeedback}</span>
+                                                </div>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputTextarea value="#{appt.patientFeedback}"
+                                                                 autoResize="false"
+                                                                 rows="3"
+                                                                 placeholder="Share your experience..."
+                                                                 styleClass="w-full p-2 border rounded-lg" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-money-bill-wave text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{patientBean.formatMoney(appt.bill)}</span>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Status">
+                                        <h:panelGroup layout="inline" rendered="#{appt.paid}">
+                                            <i class="fas fa-check-circle text-green-500"> </i>
+                                            <h:outputText value="Paid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="inline" rendered="#{!appt.paid}">
+                                            <i class="fas fa-times-circle text-red-500"> </i>
+                                            <h:outputText value="Unpaid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column style="width:4em" headerText="Actions">
+                                        <p:rowEditor />
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Admissions">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-red-50 border-b border-red-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-bed text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Admission History</h2>
+                                        <p class="text-sm text-gray-600">Your hospital stay records</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="adm"
+                                             value="#{patientBean.admissions}"
+                                             id="admissionTable"
+                                             emptyMessage="No admissions found"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             rows="5">
+                                    <p:column headerText="Date Admitted">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-sign-in-alt text-green-500"> </i>
+                                            <h:outputText value="#{patientBean.formatTime(adm.start_time)}">
+                                                <f:convertDateTime pattern="MMM dd, yyyy hh:mm a" />
+                                            </h:outputText>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Date Discharged">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-sign-out-alt text-blue-500"> </i>
+
+                                            <h:panelGroup rendered="#{adm.discharge_date != null}" layout="inline">
+                                                <h:outputText value="#{patientBean.formatTime(adm.discharge_date)}">
+                                                </h:outputText>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{adm.discharge_date == null}" layout="inline">
+                                                <span class="text-gray-500 italic">Not yet discharged</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Room Number">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-hospital text-purple-500"> </i>
+                                            <span class="font-medium">#{adm.ward}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-money-bill-wave text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{patientBean.formatMoney(adm.bill)}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Payment Status">
+                                        <h:panelGroup layout="inline" rendered="#{adm.paid}">
+                                            <i class="fas fa-check-circle text-green-500"> </i>
+                                            <h:outputText value="Paid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="inline" rendered="#{!adm.paid}">
+                                            <i class="fas fa-times-circle text-red-500"> </i>
+                                            <h:outputText value="Unpaid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+                    </p:tab>
+                </p:accordionPanel>
+            </h:panelGroup>
+
+        </h:form>
+
+        <h:form id="bookingForm">
+            <p:dialog widgetVar="dlg"
+                      id="dlg"
+                      header="Book Appointment"
+                      modal="true"
+                      resizable="false"
+                      width="550px"
+                      styleClass="rounded-xl mx-auto">
+
+                            <div class="bg-blue-50 rounded-lg p-4">
+                                <div class="flex items-center space-x-4">
+                                    <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user-md text-white text-xl"> </i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-800">Dr. #{patientBean.selectedDoctor.username}</h3>
+                                        <p class="text-blue-600">Medical Specialist</p>
+                                    </div>
+                                </div>
+                            </div>
+                <div class="px-6 py-4">
+                    <p>Please pick one speciality and one time slot, then click <strong>Book Appointment</strong>.</p>
+                </div>
+
+                <div class="bg-green-50 rounded-lg p-4 mx-6 my-2">
+                    <h4 class="font-semibold flex items-center mb-2">
+                        <i class="fas fa-tags text-green-500 mr-2"> </i>Select Speciality
+                    </h4>
+                    <p:selectOneRadio id="specialitySel"
+                                      value="#{patientBean.newApptSpecialityId}"
+                                      layout="grid"
+                                      columns="1"
+                                      required="true"
+                                      requiredMessage="You must select a speciality."
+                                      styleClass="space-y-2">
+                        <f:selectItems value="#{patientBean.selectedDoctor.specialities}"
+                                       var="spec"
+                                       itemLabel="#{spec.name} — #{patientBean.formatMoney(spec.hourlyPrice)}"
+                                       itemValue="#{spec.id}"/>
+                    </p:selectOneRadio>
+
+                </div>
+
+                <div class="bg-purple-50 rounded-lg p-4 mx-6 my-2">
+                    <h4 class="font-semibold flex items-center mb-2">
+                        <i class="fas fa-clock text-purple-500 mr-2"> </i>Select Time Slot
+                    </h4>
+                    <p:selectOneRadio id="slotSel"
+                                      value="#{patientBean.newApptAvailabilityId}"
+                                      layout="grid"
+                                      columns="1"
+                                      required="true"
+                                      requiredMessage="You must select a time slot."
+                                      styleClass="space-y-2">
+                        <f:selectItems value="#{patientBean.getBookableSlots(patientBean.selectedDoctor)}"
+                                       var="av"
+                                       itemLabel="#{patientBean.formatAvailabilities(av.startTime, av.endTime)}"
+                                       itemValue="#{av.id}"/>
+                    </p:selectOneRadio>
+                </div>
+
+                <div class="flex justify-end space-x-4 px-6 py-4 mt-4 border-t border-gray-200 bg-gray-50">
+                    <p:commandButton value="Cancel"
+                                     oncomplete="PF('dlg').hide()"
+                                     process="@this"
+                                     update=":mainForm:msgs"
+                                     styleClass="px-4 py-2 bg-white text-gray-700 border rounded-lg hover:bg-gray-100"/>
+
+                    <p:commandButton value="Book Appointment"
+                                     action="#{patientBean.newAppointment}"
+                                     process="@form"
+                                     update=":mainForm:msgs :mainForm:appointmentsAccordion:pendingTable"
+                                     oncomplete="if (!args.validationFailed) PF('dlg').hide();"
+                                     styleClass="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700">
+                        <i class="fas fa-calendar-plus mr-2"> </i>
+                    </p:commandButton>
+                </div>
+            </p:dialog>
+        </h:form>
+
+    </div>
 </h:body>
 </html>
