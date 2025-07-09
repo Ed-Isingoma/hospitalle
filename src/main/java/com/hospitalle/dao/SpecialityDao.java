@@ -5,6 +5,7 @@ import com.hospitalle.models.Speciality;
 import com.hospitalle.util.HibernateUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.Collections;
@@ -26,11 +27,15 @@ public class SpecialityDao extends GenericDao<Speciality> {
     }
 
     public void saveAll(Auth user, List<Speciality> specs) {
+        Transaction tx = null;
         try (Session s = HibernateUtil.getSession()) {
+            tx = s.beginTransaction();
             String hql = "FROM Speciality s WHERE s.doctor = :user";
             Query<Speciality> q = s.createQuery(hql, Speciality.class);
             q.setParameter("user", user);
+            tx.commit();
         } catch (HibernateException he) {
+            if (tx != null) tx.rollback();
             System.err.println("Error in saveAll: " + he.getMessage());
         }
     }
