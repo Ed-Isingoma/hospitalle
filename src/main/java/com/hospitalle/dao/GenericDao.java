@@ -15,18 +15,27 @@ public abstract class GenericDao<T> {
     }
 
     public Long save(T inst) {
+        Transaction tx = null;
         try (Session session = HibernateUtil.getSession()) {
-            return (Long)session.save(inst);
+            tx = session.beginTransaction();
+            Long id = (Long) session.save(inst);
+            tx.commit();
+            return id;
         } catch (HibernateException he) {
+            if (tx != null) tx.rollback();
             System.out.println("Error in save: " + he.getMessage());
             return null;
         }
     }
 
     public void update(T inst) {
+        Transaction tx = null;
         try (Session session = HibernateUtil.getSession()) {
-            session.update(inst);
+            tx = session.beginTransaction();
+            session.merge(inst);
+            tx.commit();
         } catch (HibernateException he) {
+            if (tx != null) tx.rollback();
             System.out.println("Error in update: " + he.getMessage());
         }
     }
@@ -76,15 +85,14 @@ public abstract class GenericDao<T> {
         }
     }
 
-
     public void delete(T e) {
-//        Transaction tx = null;
+        Transaction tx = null;
         try (Session s = HibernateUtil.getSession()) {
-//            tx = s.beginTransaction();
+            tx = s.beginTransaction();
             s.delete(e);
-//            tx.commit();
+            tx.commit();
         } catch (HibernateException he) {
-//            if (tx != null) tx.rollback();
+            if (tx != null) tx.rollback();
             System.out.println("Error in delete: " + he.getMessage());
         }
     }
