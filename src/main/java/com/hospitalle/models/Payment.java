@@ -11,10 +11,10 @@ public class Payment {
     private int amount;
     private LocalDate payment_date;
 
-    @ManyToOne @JoinColumn(name="appointment")
+    @OneToOne @JoinColumn(name="appointment")
     private Appointment appointment;
 
-    @ManyToOne @JoinColumn(name="admission")
+    @OneToOne @JoinColumn(name="admission")
     private Admission admission;
 
     public Long getId() {

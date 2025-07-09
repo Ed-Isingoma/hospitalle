@@ -8,7 +8,7 @@ import java.util.List;
 public class Appointment {
     @Id @GeneratedValue
     private Long id;
-    private String symptoms, patient_feedback, diagnosis, prescription;
+    private String patient_feedback, diagnosis, prescription;
     private boolean accepted;
 
     @ManyToOne @JoinColumn(name="patient")
@@ -17,8 +17,35 @@ public class Appointment {
     @ManyToOne @JoinColumn(name="speciality")
     private Speciality speciality;
 
-    @OneToMany(mappedBy = "appointment")
-    private List<Availability> availabilities;
+    @OneToOne(mappedBy = "appointment")
+    private Availability availability;
+
+    @OneToOne(mappedBy="appointment")
+    private Payment payment;
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public Availability getAvailability() {
+        return availability;
+    }
+
+    public boolean isAccepted() {
+        return accepted;
+    }
+
+    public String getPatient_feedback() {
+        return patient_feedback;
+    }
+
+    public void setPatient_feedback(String patient_feedback) {
+        this.patient_feedback = patient_feedback;
+    }
 
     public Long getId() {
         return id;
@@ -27,10 +54,6 @@ public class Appointment {
     public boolean getAccepted() { return accepted; }
 
     public void setAccepted(boolean accepted) { this.accepted = accepted;}
-
-    public String getSymptoms() {
-        return symptoms;
-    }
 
     public String getPatientFeedback() {
         return patient_feedback;
@@ -54,14 +77,6 @@ public class Appointment {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setSymptoms(String symptoms) {
-        this.symptoms = symptoms;
-    }
-
-    public void setPatientFeedback(String patient_feedback) {
-        this.patient_feedback = patient_feedback;
     }
 
     public void setDiagnosis(String diagnosis) {
