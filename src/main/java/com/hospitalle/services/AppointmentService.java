@@ -4,19 +4,15 @@ import com.hospitalle.dao.AppointmentDao;
 import com.hospitalle.dao.AvailabilityDao;
 import com.hospitalle.dao.SpecialityDao;
 import com.hospitalle.dto.AppointmentDto;
-import com.hospitalle.models.Availability;
-import com.hospitalle.models.Appointment;
-import com.hospitalle.models.Auth;
-import com.hospitalle.models.Speciality;
+import com.hospitalle.models.*;
 
-import javax.transaction.Transactional;
 import java.util.*;
 import java.time.LocalDateTime;
 
 public class AppointmentService {
     private final AvailabilityDao availDao = new AvailabilityDao();
     private final AppointmentDao apptDao = new AppointmentDao();
-    private final SpecialityDao specialityDao   = new SpecialityDao();
+    private final SpecialityDao specDao = new SpecialityDao();
 
     public static record AppointmentLists(
             List<AppointmentDto> pendingFuture,
@@ -24,8 +20,10 @@ public class AppointmentService {
             List<AppointmentDto> acceptedPast
     ) {}
 
-    @Transactional
-    public void newAppt(Availability avail, Speciality spec, Auth patient) {
+    public void newAppt(Long av, Long sp, Auth patient) {
+        Availability avail = availDao.findById(av);
+        Speciality spec = specDao.findById(sp);
+
         Appointment appt = new Appointment();
         appt.setPatient(patient);
         appt.setSpeciality(spec);
@@ -36,71 +34,95 @@ public class AppointmentService {
         availDao.update(avail);
     }
 
-    public AppointmentLists findAppointments(Auth doctor) {
-        List<Availability> slots = availDao.findByDoctor(doctor);
-        Map<Long, AppointmentDto> map = new LinkedHashMap<>();
-        for (Availability av : slots) {
-            Appointment app = av.getAppointment();
-            if (app == null) continue;
-            Long id = app.getId();
+    public AppointmentLists findAppointments(Auth user, boolean isDoctor) {
+        try {
+            List<Availability> slots;
+            List<AppointmentDto> apptDtos = new ArrayList<>();
 
-            AppointmentDto dto = map.computeIfAbsent(id, k -> {
-                AppointmentDto d = new AppointmentDto();
-                d.setId(id);
-                d.setSymptoms(app.getSymptoms());
-                d.setDiagnosis(app.getDiagnosis());
-                d.setPrescription(app.getPrescription());
-                d.setPatientFeedback(app.getPatientFeedback());
-                d.setPatient(app.getPatient());
-                d.setAccepted(app.getAccepted());
-                d.setSpeciality(app.getSpeciality());
-                d.setStartTime(av.getStartTime());
-                d.setEndTime(av.getEndTime());
-                return d;
-            });
+            if (isDoctor) {
+                slots = availDao.findByDoctor(user);
+                for (Availability av : slots) {
+                    Appointment app = av.getAppointment();
+                    if (app == null) continue;
+                    AppointmentDto dto = assignDto(app, av);
+                    apptDtos.add(dto);
+                }
+            } else {
+                List<Appointment> appts = apptDao.findByParameters("Appointment", Map.of("patient", user));
+                appts.forEach(appt -> {
+                    apptDtos.add(assignDto(appt, appt.getAvailability()));
+                });
+            }
 
-            if (av.getStartTime().isBefore(dto.getStartTime())) {
-                dto.setStartTime(av.getStartTime());
+            LocalDateTime now = LocalDateTime.now();
+            List<AppointmentDto> pendingFuture  = new ArrayList<>();
+            List<AppointmentDto> acceptedFuture = new ArrayList<>();
+            List<AppointmentDto> acceptedPast   = new ArrayList<>();
+
+//            List<Long> dtoFutureIds = new ArrayList<>();
+
+            for (AppointmentDto dto : apptDtos) {
+                boolean accepted = dto.getAccepted();
+                LocalDateTime start = dto.getStartTime();
+                if (!accepted && (!start.isBefore(now))) {
+                    pendingFuture.add(dto);
+                } else if (accepted && (!start.isBefore(now))) {
+                    acceptedFuture.add(dto);
+//                    dtoFutureIds.add(dto.getId());
+                } else if (accepted) {
+                    acceptedPast.add(dto);
+                }
             }
-            if (av.getEndTime().isAfter(dto.getEndTime())) {
-                dto.setEndTime(av.getEndTime());
-            }
+
+//            List<Payment> payments = apptDao.findPaymentsForAppts(dtoFutureIds);
+
+//            for (AppointmentDto dtoFuture : acceptedFuture) {
+//                boolean hasPayment = payments.stream()
+//                        .anyMatch(p -> p.getAppointment().getId().equals(dtoFuture.getId()));
+//
+//                dtoFuture.setPaid(hasPayment);
+//            }
+
+            return new AppointmentLists(pendingFuture, acceptedFuture, acceptedPast);
+        } catch (Exception e) {
+            System.out.println("Some error here: " + e.getMessage());
+//            e.printStackTrace();
+            return new AppointmentLists(
+                    new ArrayList<>(),
+                    new ArrayList<>(),
+                    new ArrayList<>()
+            );
         }
-
-        LocalDateTime now = LocalDateTime.now();
-        List<AppointmentDto> pendingFuture  = new ArrayList<>();
-        List<AppointmentDto> acceptedFuture = new ArrayList<>();
-        List<AppointmentDto> acceptedPast   = new ArrayList<>();
-
-        for (AppointmentDto dto : map.values()) {
-            boolean accepted = dto.getAccepted();
-            LocalDateTime start = dto.getStartTime();
-
-            if (!accepted && ( !start.isBefore(now) )) {
-                pendingFuture.add(dto);
-
-            } else if (accepted && ( !start.isBefore(now) )) {
-                acceptedFuture.add(dto);
-
-            } else if (accepted) {
-                acceptedPast.add(dto);
-            }
-        }
-
-        return new AppointmentLists(pendingFuture, acceptedFuture, acceptedPast);
     }
 
-    public void doUpdateAppointment (AppointmentDto apptDto) {
+    public void addPatientFeedback(AppointmentDto apptDto) {
+        apptDao.addFeedback(apptDto.getId(), apptDto.getPatientFeedback());
+    }
+
+    public void addDoctorChanges(AppointmentDto apptDto) {
         Appointment appt = new Appointment();
         appt.setId(apptDto.getId());
-        appt.setSymptoms(apptDto.getSymptoms());
         appt.setDiagnosis(apptDto.getDiagnosis());
         appt.setPrescription(apptDto.getPrescription());
-        appt.setPatientFeedback(apptDto.getPatientFeedback());
-        appt.setPatient(apptDto.getPatient());
         appt.setAccepted(apptDto.getAccepted());
-        appt.setSpeciality(apptDto.getSpeciality());
 
         apptDao.update(appt);
+    }
+
+    protected AppointmentDto assignDto(Appointment appt, Availability av) {
+        AppointmentDto d = new AppointmentDto();
+        d.setId(appt.getId());
+        d.setDiagnosis(appt.getDiagnosis());
+        d.setPrescription(appt.getPrescription());
+        d.setPatientFeedback(appt.getPatientFeedback());
+        d.setPatient(appt.getPatient().getUsername());
+        d.setBill(appt.getSpeciality().getHourlyPrice());
+        d.setAccepted(appt.getAccepted());
+        d.setDoctor(appt.getSpeciality().getDoctor().getUsername());
+        d.setSpeciality(appt.getSpeciality().getName());
+        d.setStartTime(av.getStartTime());
+        d.setPaid(appt.getPayment() != null);
+        d.setEndTime(av.getEndTime());
+        return d;
     }
 }
