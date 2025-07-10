@@ -1,20 +1,26 @@
 package com.hospitalle.bean;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
 
-import com.hospitalle.models.Admission;
+//import java.util.logging.Logger;
+//import java.util.logging.Level;
+//import javax.faces.context.FacesContext;
+
+import com.hospitalle.dto.AdmissionDto;
+import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.Auth;
-import com.hospitalle.models.Availability;
-import com.hospitalle.models.Speciality;
 import com.hospitalle.services.AdmissionService;
 import com.hospitalle.services.AppointmentService;
 import com.hospitalle.services.PatientService;
+import com.hospitalle.util.FacesGuy;
+import org.primefaces.event.RowEditEvent;
 
 @Named("patientBean")
 @SessionScoped
@@ -23,10 +29,11 @@ public class PatientBean extends DoctorPatientCommons implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
+//    private static final Logger logger = Logger.getLogger(PatientBean.class.getName());
+
     private List<Auth> doctors;
-    private List<Admission> admissions;
-    private Availability newApptAvailability;
-    private Speciality newApptSpeciality;
+    private List<AdmissionDto> admissions;
+    private Long newApptSpecialityId, newApptAvailabilityId;
     private Auth selectedDoctor;
 
     private final PatientService patientService = new PatientService();
@@ -35,67 +42,78 @@ public class PatientBean extends DoctorPatientCommons implements Serializable {
 
     @PostConstruct
     public void init() {
-        me = (Auth) FacesContext.getCurrentInstance()
-                .getExternalContext().getSessionMap().get("user");
-//        if (me == null) {
-//            logout();
+//        try {
+            me = (Auth) FacesContext.getCurrentInstance()
+                    .getExternalContext().getSessionMap().get("user");
 
-//        } else {
+//            if (me == null) {
+//                logout();
+//                return;
+//            }
+
             doctors = patientService.getDoctors();
             loadApptData();
             admissions = admissionService.findByPatient(me);
+
+//        } catch (Exception e) {
+//            logger.severe("Exception type: " + e.getClass().getName());
+//            logger.severe("Exception message: " + e.getMessage());
 //        }
     }
 
-    public List<Admission> getAdmissions() {
+    public List<AdmissionDto> getAdmissions() {
         return admissions;
     }
 
-    public void setAdmissions(List<Admission> admissions) {
-        this.admissions = admissions;
-    }
-
     public void newAppointment() {
-        appointmentService.newAppt(newApptAvailability, newApptSpeciality, me);
+        appointmentService.newAppt(newApptAvailabilityId, newApptSpecialityId, me);
+        loadApptData();
+        FacesGuy.info("Your appointment with Dr. " + selectedDoctor.getUsername() + " has been booked.");
+
+        newApptSpecialityId    = null;
+        newApptAvailabilityId  = null;
     }
 
-    public Availability getNewApptAvailability() {
-        return newApptAvailability;
+    public Long getNewApptAvailabilityId() {
+        return newApptAvailabilityId;
     }
 
-    public void setNewApptAvailability(Availability newApptAvailability) {
-        this.newApptAvailability = newApptAvailability;
+    public void setNewApptAvailabilityId(Long newApptAvailabilityId) {
+        this.newApptAvailabilityId = newApptAvailabilityId;
     }
 
-    public void setNewApptSpeciality(Speciality newApptSpeciality) {
-        this.newApptSpeciality = newApptSpeciality;
+    public void setNewApptSpecialityId(Long newApptSpecialityId) {
+        this.newApptSpecialityId = newApptSpecialityId;
+    }
+
+    public void savePatientFeedback(RowEditEvent<AppointmentDto> event) {
+        AppointmentDto edited = event.getObject();
+        appointmentService.addPatientFeedback(edited);
+        FacesGuy.info("Feedback saved");
     }
 
     public Auth getSelectedDoctor() {
         return selectedDoctor;
     }
 
-
-    public void saveUpdatedAppt() {
-        appointmentService.doUpdateAppointment(updatedAppt);
-        loadApptData();
-    }
-
     public void setSelectedDoctor(Auth selectedDoctor) {
         this.selectedDoctor = selectedDoctor;
     }
 
-    public Speciality getNewApptSpeciality() {
-        return newApptSpeciality;
-    }
-
-    public void setNewApptSpecialityId(Speciality newApptSpeciality) {
-        this.newApptSpeciality = newApptSpeciality;
+    public Long getNewApptSpecialityId() {
+        return newApptSpecialityId;
     }
 
     public List<Auth> getDoctors() {
         return doctors;
     }
+
+    public void prepareForBooking(Auth doctor) {
+        this.selectedDoctor = doctor;
+        this.newApptSpecialityId = null;
+        this.newApptAvailabilityId = null;
+    }
+
     public void setDoctors(List<Auth> doctors) {
         this.doctors = doctors;
     }

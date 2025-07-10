@@ -1,7 +1,6 @@
 package com.hospitalle.bean;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.SessionScoped;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -10,11 +9,10 @@ import java.util.List;
 import com.hospitalle.models.Auth;
 import com.hospitalle.models.Availability;
 import com.hospitalle.models.Speciality;
-import com.hospitalle.dto.AppointmentDto;
-import com.hospitalle.services.AuthService;
 import com.hospitalle.services.AvailabilityService;
 import com.hospitalle.services.SpecialityService;
 
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 
@@ -46,11 +44,11 @@ public class DoctorBean extends DoctorPatientCommons implements Serializable {
     }
 
     public void saveUpdatedAppt() {
-        appointmentService.doUpdateAppointment(updatedAppt);
-        loadApptData();
+//        appointmentService.addDoctorChanges();
+//        loadApptData();
 
-        futureSlots  = availabilityService.findFutureSlots(me);
-        specialities = specialityService.findByDoctor(me);
+//        futureSlots  = availabilityService.findFutureSlots(me);
+//        specialities = specialityService.findByDoctor(me);
     }
 
     public void addSlot() {
