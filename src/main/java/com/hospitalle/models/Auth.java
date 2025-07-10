@@ -1,7 +1,9 @@
 package com.hospitalle.models;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name="Authentications")
@@ -12,26 +14,18 @@ public class Auth {
     private boolean deleted;
 
     @OneToMany(mappedBy = "doctor")
-    private List<Speciality> specialities;
+    private Set<Speciality> specialities;
 
-    @OneToMany(mappedBy = "doctor")
-    private List<Availability> availabilities;
+//    @OneToMany(mappedBy = "doctor")
+//    private List<Availability> availabilities;
 
     public List<Speciality> getSpecialities() {
-        return specialities;
+        return new ArrayList<>(specialities);
     }
 
-    public void setSpecialities(List<Speciality> specialities) {
-        this.specialities = specialities;
-    }
-
-    public List<Availability> getAvailabilities() {
-        return availabilities;
-    }
-
-    public void setAvailabilities(List<Availability> availabilities) {
-        this.availabilities = availabilities;
-    }
+//    public List<Availability> getAvailabilities() {
+//        return availabilities;
+//    }
 
     public Long getId() {
         return id;
