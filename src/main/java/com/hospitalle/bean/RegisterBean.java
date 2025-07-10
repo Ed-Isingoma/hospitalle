@@ -1,13 +1,13 @@
 package com.hospitalle.bean;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.RequestScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
 
 import com.hospitalle.services.AuthService;
 
-@ManagedBean(name = "registerBean")
+@Named("registerBean")
 @RequestScoped
 public class RegisterBean implements Serializable {
     @Serial

@@ -1,7 +1,7 @@
 package com.hospitalle.bean;
 
 import javax.annotation.PostConstruct;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
 import java.io.Serial;
@@ -32,7 +32,8 @@ public class ReceptionistBean implements Serializable {
     private boolean deleteAccount;
     private String  newEmail, newPassword, admissionWard;
     private int newPaymentAmount;
-    private LocalDate newPaymentDate, admissionStartTime;
+    private LocalDateTime admissionStartTime;
+    private LocalDate newPaymentDate;
     private Admission newPaymentAdmission, editingAdmission;
     private Appointment newPaymentAppointment;
     private Payment paymentInEdit;
@@ -92,7 +93,7 @@ public class ReceptionistBean implements Serializable {
         admissionService.editAdmission(editingAdmission);
         FacesGuy.info("Admission edited");
     }
-    public LocalDate getAdmissionStartTime() {
+    public LocalDateTime getAdmissionStartTime() {
         return admissionStartTime;
     }
 
@@ -104,7 +105,7 @@ public class ReceptionistBean implements Serializable {
         this.editingAdmission = editingAdmission;
     }
 
-    public void setAdmissionStartTime(LocalDate admissionStartTime) {
+    public void setAdmissionStartTime(LocalDateTime admissionStartTime) {
         this.admissionStartTime = admissionStartTime;
     }
 
