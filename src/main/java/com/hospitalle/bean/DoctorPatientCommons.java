@@ -3,12 +3,14 @@ package com.hospitalle.bean;
 import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.Auth;
 import com.hospitalle.models.Availability;
-import com.hospitalle.services.AppointmentService;
-import com.hospitalle.services.AuthService;
+import com.hospitalle.services.impl.AppointmentServiceImpl;
+import com.hospitalle.services.impl.AuthServiceImpl;
 import com.hospitalle.util.FacesGuy;
+import com.hospitalle.util.StringFormatter;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import java.text.NumberFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,47 +19,50 @@ import java.util.Locale;
 
 public class DoctorPatientCommons {
 
-    protected Auth me;
-    protected boolean deleteAccount;
+    protected Auth usr;
+    protected boolean deleteAccount, editEmail, editPassword;
     protected String  newEmail, newPassword, confirmNewPassword, currentPassword;
 
-    protected final AppointmentService appointmentService   = new AppointmentService();
-    protected final AuthService authService = new AuthService();
+    @Inject
+    protected AppointmentServiceImpl appointmentServiceImpl;
+    @Inject
+    protected AuthServiceImpl authServiceImpl;
 
     protected List<AppointmentDto> pendingAppts;
     protected List<AppointmentDto> upcomingAcceptedAppts;
     protected List<AppointmentDto> pastAcceptedAppts;
 
-    public List<Availability> getBookableSlots (Auth doctor) {
-        return authService.getBookableSlots(doctor);
-    }
 
     public void loadApptData() {
-        boolean isDoctor = me.getRole().equals("doctor");
-        AppointmentService.AppointmentLists apptLists = appointmentService.findAppointments(me, isDoctor);
+        boolean isDoctor = usr.getRole().equals("doctor");
+        AppointmentServiceImpl.AppointmentLists apptLists = appointmentServiceImpl.findAppointments(usr, isDoctor);
         pendingAppts = apptLists.pendingFuture();
 //        System.out.println("This is the appt data: " + pendingAppts + upcomingAcceptedAppts + pastAcceptedAppts);
         upcomingAcceptedAppts = apptLists.acceptedFuture();
         pastAcceptedAppts = apptLists.acceptedPast();
     }
 
-    public void deleteAccount() {
-        me.setDeleted(deleteAccount);
-        authService.editOrDelete(me);
+    public boolean isEditEmail() {
+        return editEmail;
+    }
+
+    public void setEditEmail(boolean editEmail) {
+        this.editEmail = editEmail;
+    }
+
+    public boolean isEditPassword() {
+        return editPassword;
+    }
+
+    public void setEditPassword(boolean editPassword) {
+        this.editPassword = editPassword;
+    }
+
+    public void deleteAcc() {
+        usr.setDeleted(deleteAccount);
+        authServiceImpl.editOrDelete(usr);
         FacesGuy.info("Deleting Account");
         logout();
-    }
-
-    public String formatTime(LocalDateTime timeObj) {
-        if (timeObj == null) return "";
-        return timeObj.format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' h:mm a"));
-    }
-
-    public String formatMoney(Integer money) {
-        if (money == null) return "Unset";
-
-        NumberFormat formatter = NumberFormat.getNumberInstance(Locale.US);
-        return formatter.format(money) + " /=";
     }
 
     public String logout(){
@@ -79,9 +84,17 @@ public class DoctorPatientCommons {
     }
 
     public void editProfile() {
-        me.setEmail(newEmail);
-        me.setPassword(newPassword);
-        authService.editOrDelete(me);
+        usr.setEmail(newEmail);
+        usr.setPassword(newPassword);
+        authServiceImpl.editOrDelete(usr);
+    }
+
+    public String formatTime(LocalDateTime timeObj) {
+        return StringFormatter.formatTime(timeObj);
+    }
+
+    public String formatMoney(Integer money) {
+        return StringFormatter.formatMoney(money);
     }
 
     public boolean isDeleteAccount() {
@@ -136,11 +149,11 @@ public class DoctorPatientCommons {
     }
 
     public void validatePasswordConfirmation() {
-        if (me.getPassword().equals(currentPassword) && newPassword != null && newPassword.equals(confirmNewPassword)) {
-            newEmail = me.getEmail();
+        if (usr.getPassword().equals(currentPassword) && newPassword != null && newPassword.equals(confirmNewPassword)) {
+            newEmail = usr.getEmail();
             editProfile();
         } else {
-            FacesGuy.error("Current password does not match");
+            FacesGuy.error("passwordFail", "Current password does not match");
         }
     }
 
@@ -172,6 +185,6 @@ public class DoctorPatientCommons {
         return pastAcceptedAppts;
     }
 
-    public Auth getMe() { return me; }
+    public Auth getUsr() { return usr; }
 
 }
