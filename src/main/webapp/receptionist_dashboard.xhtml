@@ -1,37 +1,596 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:head>
-  <title>Receptionist Dashboard | Hospitalle</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <title>Receptionist Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"> </script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </h:head>
-<h:body class="p-6 bg-gray-50 min-h-screen">
-  <h:form>
-    <!-- Navigation -->
-    <nav class="flex space-x-4 mb-6">
-      <h:link outcome="receptionist_dashboard" value="Home" styleClass="text-indigo-600 font-semibold"/>
-      <h:outputLink value="#" styleClass="text-gray-700">Appointments (#{receptionistBean.pastAppts.size()})</h:outputLink>
-      <h:outputLink value="#" styleClass="text-gray-700">Admissions (#{receptionistBean.admissions.size()})</h:outputLink>
-    </nav>
+<h:body class="bg-gray-50 min-h-screen">
 
-    <!-- Doctors List -->
-    <h2 class="text-2xl font-semibold mb-4">Available Doctors</h2>
-    <div class="mb-8 bg-white p-4 rounded-lg shadow max-w-[1000px] mx-auto overflow-auto">
-      <p:dataTable value="#{receptionistBean.doctors}" var="doc" styleClass="w-full">
-        <p:column headerText="Name">#{doc.username}</p:column>
-      </p:dataTable>
-      <h:outputText value="No doctors available" rendered="#{empty receptionistBean.doctors}" styleClass="text-gray-500 mt-2"/>
-    </div>
+  <ui:include src="./WEB-INF/templates/navbar.xhtml" />
 
-    <!-- Availabilities -->
-    <h2 class="text-2xl font-semibold mb-4">Available Slots</h2>
-    <div class="bg-white p-4 rounded-lg shadow max-w-[1000px] mx-auto overflow-auto">
-      <p:dataTable value="#{receptionistBean.availabilities}" var="slot" styleClass="w-full">
-        <p:column headerText="Doctor">#{slot.doctor.username}</p:column>
-        <p:column headerText="When">#{slot.startTime} - #{slot.endTime}</p:column>
-      </p:dataTable>
-      <h:outputText value="No slots available" rendered="#{empty receptionistBean.availabilities}" styleClass="text-gray-500 mt-2"/>
+  <div class="container mx-auto p-6 space-y-8">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
+      <div class="flex items-center space-x-4">
+        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+          <i class="fas fa-user-md text-2xl text-white"> </i>
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold">Welcome Back!</h1>
+          <p class="text-blue-100 mt-1">Manage appointments and admissions with ease</p>
+        </div>
+      </div>
     </div>
-  </h:form>
+    <h:form id="summaryForm">
+      <h:outputText id="lastUpdated" value="#{now.time}" />
+      <h:panelGroup id="summaryPanel" layout="block">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mr-4">
+          <i class="fas fa-user-md text-xl"> </i>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Doctors Available</h3>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <h:outputText value="#{receptionistBean.doctorsAvailable}" />
+          </h2>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mr-4">
+          <i class="fas fa-procedures text-xl"> </i>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Current Admissions</h3>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <h:outputText value="#{receptionistBean.admittedPatients}" />
+          </h2>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-4">
+          <i class="fas fa-calendar-check text-xl"> </i>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Appointments Done</h3>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <h:outputText value="#{receptionistBean.totalAppointmentsDone}" />
+          </h2>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mr-4">
+          <i class="fas fa-wallet text-xl"> </i>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Payments Pending This Month</h3>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <h:outputText value="#{receptionistBean.formatMoney(receptionistBean.totalUnpaidMoney)}" />
+          </h2>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mr-4">
+          <i class="fas fa-dollar-sign text-xl"> </i>
+        </div>
+        <div>
+          <h3 class="text-sm font-medium text-gray-500">Payments this month</h3>
+          <h2 class="text-2xl font-bold text-gray-800">
+            <h:outputText value="#{receptionistBean.formatMoney(receptionistBean.totalPaidMoney)}">
+            </h:outputText>
+          </h2>
+        </div>
+      </div>
+
+    </div>
+    </h:panelGroup>
+    </h:form>
+
+    <h:form id="mainForm">
+      <p:messages id="msgs" autoUpdate="true" showDetail="true" closable="true"
+                  styleClass="mb-6"/>
+
+      <h:panelGroup id="yourInfoPanel" layout="block" style="padding: 2rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
+          <i class="fas fa-table" style="color: #059669; margin-right: 0.5rem;"> </i>
+          Management Information
+        </h2>
+
+        <p:accordionPanel id="appointmentsAccordion" multiple="true" styleClass="shadow-md rounded-xl border border-gray-200">
+
+          <p:tab title="Completed Appointments" id="completedAppts">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div class="bg-yellow-50 border-b border-yellow-100 px-6 py-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-clock text-white"> </i>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-bold text-gray-800">Completed Appointments</h2>
+                    <p class="text-sm text-gray-600">Recently completed appointments</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-6">
+                <p:dataTable var="appt"
+                             value="#{receptionistBean.pastAppts}"
+                             id="completedTable"
+                             rowKey="#{appt.id}"
+                             emptyMessage="No pending requests"
+                             styleClass="w-full"
+                             paginator="true"
+                             paginatorPosition="bottom"
+                             rows="5">
+                  <p:column headerText="Date And Time" styleClass="font-medium">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-calendar-alt text-blue-500"> </i>
+                      <div>
+                        <h:outputText value="#{receptionistBean.formatTime(appt.startTime)}">
+                        </h:outputText> to
+                        <br/>
+                        <h:outputText value="#{receptionistBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                        </h:outputText>
+                      </div>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Speciality">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-stethoscope text-green-500"> </i>
+                      <span class="font-medium text-green-700">#{appt.speciality}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Doctor">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-notes-medical text-red-500"> </i>
+                      <span class="text-sm">#{appt.doctor}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Client">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                      <span class="text-sm">#{appt.patient}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Bill">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-money-bill-wave text-green-600"> </i>
+                      <span class="font-medium text-blue-700">#{receptionistBean.formatMoney(appt.bill)}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Payment">
+                    <p:commandButton
+                            value="#{appt.paid ? 'Paid' : 'Mark as Paid'}"
+                            icon="fas fa-check-circle"
+                            action="#{receptionistBean.addApptPayment(appt)}"
+                            process="@this"
+                            disabled="#{appt.paid}"
+                            update=":summaryForm :mainForm:appointmentsAccordion:completedTable"
+                            styleClass="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-medium px-3 py-1 rounded-full transition flex items-center gap-2">
+                    </p:commandButton>
+                  </p:column>
+                </p:dataTable>
+              </div>
+            </div>
+          </p:tab>
+
+          <p:tab title="Upcoming Appointments">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div class="bg-green-50 border-b border-green-100 px-6 py-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-white"> </i>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
+                    <p class="text-sm text-gray-600">Confirmed appointments which aren't completed yet</p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-6">
+                <p:dataTable var="appt"
+                             value="#{receptionistBean.futureAppts}"
+                             id="upcomingTable"
+                             emptyMessage="No upcoming appointments"
+                             styleClass="w-full"
+                             paginator="true"
+                             paginatorPosition="bottom"
+                             rows="5">
+                  <p:column headerText="Date And Time" styleClass="font-medium">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-calendar-alt text-blue-500"> </i>
+                      <div>
+                        <h:outputText value="#{receptionistBean.formatTime(appt.startTime)}">
+                        </h:outputText> to
+                        <br/>
+                        <h:outputText value="#{receptionistBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                        </h:outputText>
+                      </div>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Speciality">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-stethoscope text-green-500"> </i>
+                      <span class="font-medium text-green-700">#{appt.speciality}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Doctor">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-user-md text-blue-500"> </i>
+                      <span class="font-medium text-blue-700">Dr. #{appt.doctor}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Client">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                      <span class="text-sm">#{appt.patient}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Bill">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-money-bill-wave text-green-600"> </i>
+                      <span class="font-medium text-blue-700">#{receptionistBean.formatMoney(appt.bill)}</span>
+                    </div>
+                  </p:column>
+                  <p:column headerText="Payment">
+                    <p:commandButton
+                            value="#{appt.paid ? 'Paid' : 'Mark as Paid'}"
+                            icon="fas fa-check-circle"
+                            action="#{receptionistBean.addApptPayment(appt)}"
+                            process="@this"
+                            disabled="#{appt.paid}"
+                            update=":summaryForm :mainForm:appointmentsAccordion:upcomingTable"
+                            styleClass="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-medium px-3 py-1 rounded-full transition flex items-center gap-2">
+                    </p:commandButton>
+                  </p:column>
+                </p:dataTable>
+              </div>
+            </div>
+          </p:tab>
+
+          <p:tab title="Admissions">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              <div class="bg-red-50 border-b border-red-100 px-6 py-4">
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                    <i class="fas fa-bed text-white"> </i>
+                  </div>
+                  <div>
+                    <h2 class="text-xl font-bold text-gray-800">Admission History</h2>
+                    <p class="text-sm text-gray-600">
+                      Recent hospital stay records. Click the pencil icon to edit a row.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="p-6">
+                <p:dataTable id="admissionTable"
+                             var="adm"
+                             value="#{receptionistBean.admissions}"
+                             styleClass="w-full"
+                             emptyMessage="No admissions found"
+                             paginator="true"
+                             paginatorPosition="bottom"
+                             rows="5"
+                             editable="true"
+                             editMode="row">
+
+                  <p:ajax event="rowEdit"
+                          listener="#{receptionistBean.editAdmission}"
+                          update=":mainForm:appointmentsAccordion:admissionTable :summaryForm :mainForm:admissionEditor"
+                          process="@this" />
+                  <p:ajax event="rowEditCancel"
+                          listener="#{receptionistBean.onRowCancel}"
+                          update=":mainForm:appointmentsAccordion:admissionTable :summaryForm :mainForm:admissionEditor"
+                          process="@this" />
+
+                  <p:column style="width:3rem">
+                    <p:rowEditor/>
+                  </p:column>
+
+                  <p:column headerText="Patient">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                      <h:outputText value="#{adm.patient.username}" styleClass="font-medium"/>
+                    </div>
+                  </p:column>
+
+                  <p:column headerText="Date Admitted">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-sign-in-alt text-green-500"> </i>
+                      <h:outputText value="#{receptionistBean.formatTime(adm.start_time)}">
+                        <f:convertDateTime pattern="MMM dd, yyyy hh:mm a"/>
+                      </h:outputText>
+                    </div>
+                  </p:column>
+
+                  <p:column headerText="Date Discharged">
+                    <p:cellEditor>
+                      <f:facet name="output">
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-sign-out-alt text-blue-500"> </i>
+                          <h:outputText value="#{adm.discharge_date != null
+                                       ? receptionistBean.formatTime(adm.discharge_date)
+                                       : 'Not yet discharged'}"
+                                        styleClass="#{adm.discharge_date == null ? 'text-gray-500 italic' : ''}"/>
+                        </div>
+                      </f:facet>
+                      <f:facet name="input">
+                        <p:calendar value="#{adm.discharge_date}"
+                                    pattern="MMM dd, yyyy hh:mm a"
+                                    showButtonPanel="true"
+                                    navigator="true"
+                                    styleClass="w-full"/>
+                      </f:facet>
+                    </p:cellEditor>
+                  </p:column>
+
+                  <p:column headerText="Room Number">
+                    <div class="flex items-center space-x-2">
+                      <i class="fas fa-hospital text-purple-500"> </i>
+                      <h:outputText value="#{adm.ward}" styleClass="font-medium"/>
+                    </div>
+                  </p:column>
+
+                  <p:column headerText="Bill">
+                    <p:cellEditor>
+                      <f:facet name="output">
+                        <div class="flex items-center space-x-2">
+                          <i class="fas fa-money-bill-wave text-green-600"> </i>
+                          <h:outputText value="#{receptionistBean.formatMoney(adm.bill)}"
+                                        styleClass="font-medium text-blue-700"/>
+                        </div>
+                      </f:facet>
+                      <f:facet name="input">
+                        <p:inputNumber value="#{adm.bill}"
+                                          integerOnly="true"
+                                          minValue="0"
+                                          mode="decimal"
+                                          symbol=""
+                                          converter="javax.faces.Integer"
+                                          styleClass="w-full p-2 border rounded-lg" />
+                      </f:facet>
+                    </p:cellEditor>
+
+                  </p:column>
+
+                  <p:column headerText="Payment">
+                    <p:commandButton value="#{adm.payment != null ? 'Paid' : 'Mark as Paid'}"
+                                     icon="fas fa-check-circle"
+                                     action="#{receptionistBean.addAdmissionPayment(adm)}"
+                                     process="@this"
+                                     update=":summaryForm admissionTable mainForm:admissionEditor"
+                                     disabled="#{adm.payment != null}"
+                                     styleClass="bg-green-100 hover:bg-green-200
+                                       text-green-800 text-sm font-medium
+                                       px-3 py-1 rounded-full
+                                       transition flex items-center gap-2"/>
+                  </p:column>
+
+                </p:dataTable>
+              </div>
+            </div>
+          </p:tab>
+
+        </p:accordionPanel>
+      </h:panelGroup>
+
+      <p:messages id="admissionEditor" autoUpdate="true" showDetail="true" showSummary="false"
+                  closable="true" styleClass="mb-6"/>
+
+    </h:form>
+
+    <h:form id="addAdmForm">
+
+      <div class="flex justify-center space-x-4 mb-4">
+        <p:commandButton value="Add New Patient" icon="fas fa-user-plus"
+                         onclick="PF('addPatientDlg').show(); return false;"
+                         style="padding: 10px 16px; border-radius: 10px; background-color: #3B82F6; color: #FFFFFF;"/>
+        <p:commandButton value="Add Admission" icon="fas fa-bed"
+                         onclick="PF('addAdmDlg').show(); return false;"
+                         style="padding: 10px 16px; border-radius: 10px; background-color: #22C55E; color: #FFFFFF;"/>
+      </div>
+
+      <p:dialog widgetVar="addAdmDlg"
+                header="New Admission"
+                modal="true"
+                closable="true"
+                resizable="false"
+                styleClass="w-full max-w-2xl">
+
+        <p:messages id="msgs"
+                    showDetail="true"
+                    showSummary="false"
+                    closable="true"
+                    autoUpdate="true"
+                    styleClass="mb-4"/>
+
+          <h:panelGroup id="admInputPanel">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label for="patientSelect" class="flex items-center space-x-2 text-gray-700 font-semibold mb-1">
+                    <i class="fas fa-user-injured text-blue-500"/><span>Patient</span>
+                  </label>
+                  <p:autoComplete id="patientSelect"
+                                  value="#{receptionistBean.newAdmission.patient}"
+                                  completeMethod="#{receptionistBean.completePatients}"
+                                  var="pat"
+                                  itemLabel="#{pat.username}"
+                                  itemValue="#{pat}"
+                                  converter="authConverter"
+                                  forceSelection="true"
+                                  dropdown="true"
+                                  placeholder="Type to search…"
+                                  required="true"
+                                  requiredMessage="Patient is required"
+                                  inputStyle="width:100%; border:1px solid #ccc; border-radius:4px; padding:8px;"/>
+                </div>
+                <div>
+                  <label for="ward" class="flex items-center space-x-2 text-gray-700 font-semibold mb-1">
+                    <i class="fas fa-hospital text-purple-500"/><span>Room Number</span>
+                  </label>
+                  <p:inputText id="ward"
+                               value="#{receptionistBean.newAdmission.ward}"
+                               placeholder="e.g. A-101"
+                               required="true"
+                               requiredMessage="Room number is required"
+                               inputStyle="width:100%; border:1px solid #ccc; border-radius:4px; padding:8px;"/>
+                </div>
+                <div>
+                  <label for="startTime" class="flex items-center space-x-2 text-gray-700 font-semibold mb-1">
+                    <i class="fas fa-sign-in-alt text-green-500"/><span>Admission Date</span>
+                  </label>
+                  <p:calendar id="startTime"
+                              value="#{receptionistBean.newAdmission.start_time}"
+                              pattern="MMM dd, yyyy hh:mm a"
+                              showButtonPanel="true"
+                              navigator="true"
+                              required="true"
+                              requiredMessage="Admission date is required"
+                              inputStyle="width:100%; border:1px solid #ccc; border-radius:4px; padding:8px;"/>
+                </div>
+                <div>
+                  <label for="dischargeTime" class="flex items-center space-x-2 text-gray-700 font-semibold mb-1">
+                    <i class="fas fa-sign-out-alt text-red-500"/><span>Discharge Date</span>
+                  </label>
+                  <p:calendar id="dischargeTime"
+                              value="#{receptionistBean.newAdmission.discharge_date}"
+                              pattern="MMM dd, yyyy hh:mm a"
+                              showButtonPanel="true"
+                              navigator="true"
+                              inputStyle="width:100%; border:1px solid #ccc; border-radius:4px; padding:8px;"/>
+                </div>
+                <div class="sm:col-span-2">
+                  <label for="bill" class="flex items-center space-x-2 text-gray-700 font-semibold mb-1">
+                    <i class="fas fa-money-bill-wave text-green-600"/><span>Bill (UGX)</span>
+                  </label>
+                  <p:inputNumber id="bill"
+                                 value="#{receptionistBean.newAdmission.bill}"
+                                 minValue="0"
+                                 integerOnly="true"
+                                 mode="currency"
+                                 currencySymbol="UGX"
+                                 inputStyle="width:100%; border:1px solid #ccc; border-radius:4px; padding:8px;"/>
+                </div>
+              </div>
+
+            <div class="flex justify-end space-x-4 mt-6">
+              <p:commandButton value="Save Admission"
+                               icon="fas fa-check"
+                               action="#{receptionistBean.newAdmissionAction}"
+                               process="@form"
+                               for="patientSelect,ward,startTime,dischargeTime,bill"
+                               oncomplete="if (!args.validationFailed) { PF('addAdmDlg').hide(); }"
+                               update=":mainForm:appointmentsAccordion:admissionTable addAdmForm:msgs
+                                summaryForm addAdmForm:admInputPanel :mainForm:admissionEditor"
+                               style="background: linear-gradient(90deg, #38a169, #2f855a); color: #fff;
+                            padding: 10px 20px; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            font-weight: 600;"/>
+              <p:commandButton value="Cancel"
+                               icon="fas fa-times"
+                               onclick="PF('addAdmDlg').hide(); return false;"
+                               style="background: #e2e8f0; color: #2d3748; padding: 10px 20px;
+                            border: none; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            font-weight: 600;"/>
+            </div>
+          </h:panelGroup>
+
+      </p:dialog>
+
+    </h:form>
+
+    <h:form id="addPatientForm">
+
+      <p:messages id="patientMsgs"
+                  showDetail="true"
+                  showSummary="false"
+                  autoUpdate="true"
+                  closable="true"
+                  style="margin-bottom:15px; font-size:14px; border-radius:6px; padding:10px;"/>
+
+      <p:dialog id="addPatientDlg"
+                widgetVar="addPatientDlg"
+                header="New Patient"
+                modal="true"
+                closable="true"
+                resizable="false"
+                style="width: 400px; border-radius:10px; padding:20px; font-family:Arial, sans-serif;">
+
+        <h:panelGroup id="patientPanel">
+          <div style="display:flex; flex-direction:column; gap:15px;">
+
+            <p:inputText id="username"
+                         value="#{receptionistBean.regUsername}"
+                         required="true"
+                         requiredMessage="Username is required"
+                         placeholder="Username"
+                         inputStyle="width:100%; padding:12px; border:1px solid #d1d5db;
+                         border-radius:6px; font-size:14px; background:#f9fafb;"/>
+
+            <p:inputText id="email"
+                         value="#{receptionistBean.regEmail}"
+                         required="true"
+                         requiredMessage="Email is required"
+                         validatorMessage="Please enter a valid email"
+                         placeholder="Email"
+                         inputStyle="width:100%; padding:12px; border:1px solid #d1d5db; border-radius:6px;
+                          font-size:14px; background:#f9fafb;">
+              <f:validateRegex pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"/>
+            </p:inputText>
+
+            <p:password id="pass"
+                        value="#{receptionistBean.regPassword}"
+                        required="true"
+                        requiredMessage="Password is required"
+                        placeholder="Password"
+                        feedback="false"
+                        toggleMask="true"
+                        inputStyle="width:100%; padding:12px; border:1px solid #d1d5db;
+                         border-radius:6px; font-size:14px; background:#f9fafb;"/>
+
+            <p:password id="confirmPass"
+                        value="#{receptionistBean.regConfirmPassword}"
+                        required="true"
+                        requiredMessage="Please confirm password"
+                        placeholder="Confirm Password"
+                        validator="#{receptionistBean.validateConfirmPassword}"
+                        feedback="false"
+                        toggleMask="true"
+                        inputStyle="width:100%; padding:12px; border:1px solid #d1d5db;
+                         border-radius:6px; font-size:14px; background:#f9fafb;"/>
+
+          </div>
+        </h:panelGroup>
+
+        <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px;">
+          <p:commandButton value="Save Patient"
+                           icon="fas fa-check"
+                           action="#{receptionistBean.createPatientAction}"
+                           process="@form"
+                           update=":mainForm:admissionEditor :addPatientForm:patientPanel"
+                           oncomplete="if (!args.validationFailed) { PF('addPatientDlg').hide(); }"
+                           style="background:#10B981; color:#fff; padding:10px 20px; font-size:14px;
+                           font-weight:bold; border:none; border-radius:6px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"/>
+
+          <p:commandButton value="Cancel"
+                           icon="fas fa-times"
+                           onclick="PF('addPatientDlg').hide(); return false;"
+                           style="background:#E5E7EB; color:#374151; padding:10px 20px; font-size:14px;
+                           font-weight:bold; border:none; border-radius:6px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.05);"/>
+        </div>
+
+      </p:dialog>
+    </h:form>
+
+  </div>
+  <ui:include src="./WEB-INF/templates/footer.xhtml" />
 </h:body>
 </html>

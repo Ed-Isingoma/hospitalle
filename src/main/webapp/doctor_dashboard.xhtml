@@ -1,99 +1,524 @@
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
 <h:head>
-    <title>Doctor Dashboard | Hospitalle</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+    <title>Doctor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"> </script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 </h:head>
-<h:body class="p-6 bg-gray-50 min-h-screen">
-    <h:form>
+<h:body class="bg-gray-50 min-h-screen">
 
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6">
-        <h:outputText value="Hello, Dr. #{doctorBean.me.username}" styleClass="text-2xl font-bold"/>
-        <div class="space-x-2">
-            <p:commandButton icon="pi pi-plus" title="Add Availability" oncomplete="PF('dlgAdd').show()" process="@this"/>
-            <p:commandButton icon="pi pi-cog" title="Specialities" oncomplete="PF('dlgSpec').show()" process="@this"/>
-        </div>
-        </div>
-    </h:form>
+    <ui:include src="./WEB-INF/templates/navbar.xhtml" />
 
-    <!-- Appointments -->
-    <div class="max-w-[1000px] mx-auto overflow-auto bg-white p-4 rounded-lg shadow">
-        <h3 class="text-xl font-semibold mb-2">Appointments</h3>
-        <p:dataTable styleClass="w-full" value="#{doctorBean.appts}" var="apt" emptyMessage="No appointments yet">
-            <p:column headerText="When">#{apt.startTime} – #{apt.endTime}</p:column>
-            <p:column headerText="Patient">#{apt.patient.username}</p:column>
-            <p:column headerText="Symptoms">#{apt.symptoms}</p:column>
-            <p:column headerText="Diagnosis">#{apt.diagnosis}</p:column>
-            <p:column headerText="Prescription">#{apt.prescription}</p:column>
-            <p:column headerText="Speciality">#{apt.speciality.name}</p:column>
-        </p:dataTable>
-    </div>
-
-    <!-- Future Availabilities -->
-    <div class="mb-8 bg-white p-4 rounded-lg shadow">
-        <h3 class="text-xl font-semibold mb-2">Future Availabilities</h3>
-        <p:dataTable value="#{doctorBean.futureSlots}" var="slot" emptyMessage="No free slots">
-            <p:column headerText="From">#{slot.startTime}</p:column>
-            <p:column headerText="To">#{slot.endTime}</p:column>
-        </p:dataTable>
-    </div>
-
-    <!-- Add Availability Dialog -->
-    <p:dialog header="Add Availability" widgetVar="dlgAdd" modal="true" resizable="false">
-        <h:form>
-            <div class="space-y-4">
-                <p:calendar id="start" value="#{doctorBean.newStart}" showTime="true"
-                            pattern="yyyy-MM-dd HH:mm" placeholder="Start"/>
-                <p:calendar id="end"   value="#{doctorBean.newEnd}" showTime="true"
-                            pattern="yyyy-MM-dd HH:mm" placeholder="End"/>
+    <div class="container mx-auto p-6 space-y-8">
+        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white shadow-xl">
+            <div class="flex items-center space-x-4">
+                <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user-md text-2xl text-white"> </i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold">Welcome Back!</h1>
+                    <p class="text-blue-100 mt-1">A better way to plan for your clients</p>
+                </div>
             </div>
-            <div class="mt-4 flex justify-end space-x-2">
-                <p:commandButton value="Cancel" onclick="PF('dlgAdd').hide()" type="button"/>
-                <p:commandButton value="Save" actionListener="#{doctorBean.addSlot}" update="@form"
-                                 oncomplete="PF('dlgAdd').hide()"/>
+        </div>
+
+        <h:form id="availabilitiesForm">
+            <h:panelGroup layout="block" styleClass="p-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-2">
+                    <i class="fas fa-calendar-check text-indigo-600 text-xl"> </i>
+                    Your Schedules
+                </h2>
+                <div class="max-h-[35vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div class="grid lg:grid-cols-6 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <ui:repeat value="#{doctorBean.futureSlots}" var="slot">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex justify-between items-center">
+                                <span class="font-semibold text-gray-800">
+                                    #{doctorBean.formatAvailabilities(slot.startTime, slot.endTime)}
+                                </span>
+                            <p:commandLink
+                                    styleClass="text-sm text-red-500 hover:text-red-700 transition-colors"
+                                    action="#{doctorBean.setScheduleToDelete(slot)}"
+                                    process="@this"
+                                    update=":confirmDeleteAv"
+                                    oncomplete="PF('deleteDlg').show()" >
+                                    <i class="fas fa-trash-alt"> </i>
+                                </p:commandLink>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </h:panelGroup>
+        </h:form>
+
+        <h:form id="addAvailabilityForm" styleClass="mb-6">
+            <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col sm:flex-row items-center justify-center gap-6">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-calendar-day text-indigo-500 text-2xl"> </i>
+                    <span class="font-semibold text-gray-700 text-lg">
+                        You can add to your available schedules:
+                    </span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <p:commandButton
+                            icon="fas fa-chevron-left"
+                            title="Previous Day"
+                            action="#{doctorBean.prevDate}"
+                            process="@this"
+                            update=":addAvailabilityForm:selectedDateBlock"
+                            styleClass="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    />
+                    <h:panelGroup id="selectedDateBlock" layout="block"
+                                  styleClass="min-w-[8rem] text-center font-semibold text-gray-800">
+                        <h:outputText value="#{doctorBean.showSelectedDate(doctorBean.selectedDate)}" />
+                    </h:panelGroup>
+                    <p:commandButton
+                            icon="fas fa-chevron-right"
+                            title="Next Day"
+                            action="#{doctorBean.nextDate}"
+                            process="@this"
+                            update=":addAvailabilityForm:selectedDateBlock"
+                            styleClass="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    />
+                </div>
+                <div class="flex items-center gap-2">
+                    <p:commandButton
+                            icon="fas fa-chevron-left"
+                            title="Previous Hour"
+                            action="#{doctorBean.prevTime}"
+                            process="@this"
+                            update=":addAvailabilityForm:selectedTimeOutput"
+                            styleClass="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    />
+                    <h:panelGroup id="selectedTimeOutput" layout="block"
+                                  styleClass="min-w-[6rem] text-center font-semibold text-gray-800">
+                        <h:outputText value="#{doctorBean.selectedHour}:00Hrs to #{doctorBean.selectedHour+1}:00Hrs" />
+                    </h:panelGroup>
+                    <p:commandButton
+                            icon="fas fa-chevron-right"
+                            title="Next Hour"
+                            action="#{doctorBean.nextTime}"
+                            process="@this"
+                            update=":addAvailabilityForm:selectedTimeOutput"
+                            styleClass="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+                    />
+                </div>
+
+                <p:commandButton
+                        value="Add"
+                        icon="fas fa-calendar-plus"
+                        action="#{doctorBean.addSchedule}"
+                        process="@form"
+                        update=":availabilitiesForm :addAvailabilityForm"
+                        styleClass="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2 rounded-lg transition"
+                />
             </div>
         </h:form>
-    </p:dialog>
 
-    <!-- Specialities Dialog -->
-    <p:dialog header="Manage Specialities" widgetVar="dlgSpec" modal="true" resizable="false" style="width:600px">
-        <h:form id="specForm">
-            <p:dataTable value="#{doctorBean.specialities}" var="s" editable="true">
-                <p:column headerText="Name">
-                    <p:cellEditor>
-                        <f:facet name="output"><h:outputText value="#{s.name}"/></f:facet>
-                        <f:facet name="input"><p:inputText value="#{s.name}"/></f:facet>
-                    </p:cellEditor>
-                </p:column>
-                <p:column headerText="Hourly Price">
-                    <p:cellEditor>
-                        <f:facet name="output"><h:outputText value="#{s.hourlyPrice}"/></f:facet>
-                        <f:facet name="input"><p:inputText value="#{s.hourlyPrice}"/></f:facet>
-                    </p:cellEditor>
-                </p:column>
-                <p:column headerText="Actions">
-                    <p:commandButton icon="pi pi-trash" title="Remove"
-                                     actionListener="#{doctorBean.removeSpeciality(s)}"
-                                     update="specForm" process="@this"/>
-                </p:column>
-            </p:dataTable>
 
-            <div class="mt-4 flex space-x-2 items-center">
-                <p:inputText placeholder="New speciality" value="#{doctorBean.newSpec.name}"/>
-                <p:inputText placeholder="Price" value="#{doctorBean.newSpec.hourlyPrice}"/>
-                <p:commandButton value="Add" actionListener="#{doctorBean.addSpeciality}"
-                                 update="specForm" process="@this"/>
+        <h:form id="confirmDeleteAv">
+            <p:dialog header="Confirm Deletion"
+                      widgetVar="deleteDlg"
+                      modal="true"
+                      showEffect="fade"
+                      hideEffect="fade"
+                      resizable="false"
+                      draggable="false"
+                      closable="false"
+                      styleClass="rounded-xl"
+                      style="width: 350px; text-align: center;">
+
+                <div class="p-4">
+                    <p class="text-gray-700 text-base mb-4">
+                        Confirm schedule deletion
+                    </p>
+
+                    <div class="flex justify-center gap-4">
+                        <p:commandButton value="Yes"
+                                         action="#{doctorBean.deleteAvailability}"
+                                         oncomplete="PF('deleteDlg').hide()"
+                                         update="availabilitiesForm"
+                                         styleClass="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"/>
+
+                        <p:commandButton value="Cancel"
+                                         onclick="PF('deleteDlg').hide(); return false;"
+                                         styleClass="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"/>
+                    </div>
+                </div>
+            </p:dialog>
+        </h:form>
+
+        <h:form id="mainForm">
+            <p:messages id="msgs" autoUpdate="true" showDetail="true" closable="true"
+                        styleClass="mb-6"/>
+
+            <h:panelGroup id="yourInfoPanel" layout="block" style="padding: 2rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: 1rem;">
+                    <i class="fas fa-table" style="color: #059669; margin-right: 0.5rem;"> </i>
+                    Your Clients' Information
+                </h2>
+
+                <p:accordionPanel id="appointmentsAccordion" multiple="true" styleClass="shadow-md rounded-xl border border-gray-200">
+                    <p:tab title="Pending Appointment Requests" id="pendingAppts">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-amber-50 border-b border-amber-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-clock text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Pending Requests</h2>
+                                        <p class="text-sm text-gray-600">Appointments awaiting approval</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{doctorBean.pendingAppts}"
+                                             id="pendingTable"
+                                             rowKey="#{appt.id}"
+                                             emptyMessage="No pending requests"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="5">
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-stethoscope text-green-500"> </i>
+                                            <span class="font-medium text-green-700">#{appt.speciality}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Client">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                                            <span class="text-sm">#{appt.patient}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Click to Accept">
+                                        <p:commandButton
+                                                value="Accept"
+                                                icon="fas fa-check-circle"
+                                                action="#{doctorBean.acceptAppointment(appt)}"
+                                                process="@this"
+                                                disabled="#{appt.accepted}"
+                                                update="pendingTable :availabilitiesForm :mainForm:appointmentsAccordion:upcomingTable"
+                                                styleClass="bg-green-100 hover:bg-green-200 text-green-800 text-sm font-medium px-3 py-1 rounded-full transition flex items-center gap-2">
+                                        </p:commandButton>
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Upcoming Appointments">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-green-50 border-b border-green-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-calendar-check text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
+                                        <p class="text-sm text-gray-600">Your confirmed appointments</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{doctorBean.upcomingAcceptedAppts}"
+                                             id="upcomingTable"
+                                             emptyMessage="No upcoming appointments"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="5">
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Speciality">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-stethoscope text-green-500"> </i>
+                                            <span class="font-medium text-green-700">#{appt.speciality}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Client">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{appt.patient}</span>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-money-bill-wave text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{doctorBean.formatMoney(appt.bill)}</span>
+                                        </div>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                    <p:tab title="Previous Appointments">
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                            <div class="bg-purple-50 border-b border-purple-100 px-6 py-4">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-history text-white"> </i>
+                                    </div>
+                                    <div>
+                                        <h2 class="text-xl font-bold text-gray-800">Previous Appointments</h2>
+                                        <p class="text-sm text-gray-600">Click the edit icon to add your feedback</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <p:dataTable var="appt"
+                                             value="#{doctorBean.pastAcceptedAppts}"
+                                             id="pastTable"
+                                             rowKey="#{appt.id}"
+                                             editable="true"
+                                             editMode="row"
+                                             styleClass="w-full"
+                                             paginator="true"
+                                             paginatorPosition="bottom"
+                                             rows="5">
+
+                                    <p:ajax event="rowEdit"
+                                            listener="#{doctorBean.saveUpdatedAppt}"
+                                            update=":mainForm:msgs" />
+
+                                    <p:column headerText="Date And Time" styleClass="font-medium">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-calendar-alt text-blue-500"> </i>
+                                            <div>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.startTime)}">
+                                                </h:outputText> to
+                                                <br/>
+                                                <h:outputText value="#{doctorBean.formatTime(appt.endTime)}" styleClass="text-sm text-gray-500">
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Client">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-user-injured text-xl text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{appt.patient}</span>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Diagnosis">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <div class="flex items-start space-x-2">
+                                                    <i class="fas fa-notes-medical text-blue-500"> </i>
+                                                    <span class="text-sm">#{appt.diagnosis}</span>
+                                                </div>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputTextarea value="#{appt.diagnosis}"
+                                                                 autoResize="false"
+                                                                 rows="3"
+                                                                 placeholder="Add diagnosis..."
+                                                                 styleClass="w-full p-2 border rounded-lg" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column headerText="Prescriptions">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <div class="flex items-start space-x-2">
+                                                    <i class="fas fa-pills text-blue-500"> </i>
+                                                    <span class="text-sm">#{appt.prescription}</span>
+                                                </div>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputTextarea value="#{appt.prescription}"
+                                                                 autoResize="false"
+                                                                 rows="3"
+                                                                 placeholder="Add prescription..."
+                                                                 styleClass="w-full p-2 border rounded-lg" />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>
+
+                                    <p:column headerText="Client Feedback">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-comment-alt text-gray-400 mt-1"> </i>
+                                            <h:panelGroup rendered="#{appt.patientFeedback != null}" layout="inline">
+                                                <span class="font-medium text-blue-700">#{appt.patientFeedback}</span>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{appt.patientFeedback == null}" layout="inline">
+                                                <span class="italic text-gray-500">Not yet set</span>
+                                            </h:panelGroup>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Bill">
+                                        <div class="flex items-center space-x-2">
+                                            <i class="fas fa-money-bill-wave text-green-600"> </i>
+                                            <span class="font-medium text-blue-700">#{doctorBean.formatMoney(appt.bill)}</span>
+                                        </div>
+                                    </p:column>
+
+                                    <p:column headerText="Payment Status">
+                                        <h:panelGroup layout="inline" rendered="#{appt.paid}">
+                                            <i class="fas fa-check-circle text-green-500"> </i>
+                                            <h:outputText value="Paid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup layout="inline" rendered="#{!appt.paid}">
+                                            <i class="fas fa-times-circle text-red-500"> </i>
+                                            <h:outputText value="Unpaid" styleClass="font-medium text-blue-700"/>
+                                        </h:panelGroup>
+                                    </p:column>
+
+                                    <p:column style="width:4em" headerText="Actions">
+                                        <p:rowEditor />
+                                    </p:column>
+
+                                </p:dataTable>
+                            </div>
+                        </div>
+                    </p:tab>
+
+                </p:accordionPanel>
+            </h:panelGroup>
+
+        </h:form>
+
+        <h:form id="specialitiesForm">
+            <h:panelGroup layout="block" styleClass="p-8">
+                <h2 class="text-2xl font-bold text-gray-700 mb-6 flex items-center gap-2">
+                    <i class="fas fa-calendar-check text-indigo-600 text-xl"> </i>
+                    Specialisations And Pricing
+                </h2>
+                <div class="max-h-[35vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div class="grid bg-stone-50 lg:grid-cols-6 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                        <ui:repeat value="#{doctorBean.specialities}" var="spec">
+                            <div class="bg-white rounded-2xl shadow-lg p-7 flex justify-between items-center">
+                                <span class="font-semibold font-medium text-gray-800">
+                                    #{spec.name} — #{doctorBean.formatMoney(spec.hourlyPrice)}
+                                </span>
+                                <p:commandLink
+                                        styleClass="text-sm text-red-500 hover:text-red-700 transition-colors"
+                                        action="#{doctorBean.setSpecToDelete(spec)}"
+                                        process="@this"
+                                        update=":confirmDeleteSpec"
+                                        oncomplete="PF('deleteDlg').show()" >
+                                    <i class="fas fa-trash-alt"> </i>
+                                </p:commandLink>
+                            </div>
+                        </ui:repeat>
+                    </div>
+                </div>
+            </h:panelGroup>
+        </h:form>
+
+        <h:form id="confirmDeleteSpec">
+            <p:dialog header="Confirm Deletion"
+                      widgetVar="deleteDlg"
+                      modal="true"
+                      showEffect="fade"
+                      hideEffect="fade"
+                      resizable="false"
+                      draggable="false"
+                      closable="false"
+                      styleClass="rounded-xl"
+                      style="width: 350px; text-align: center;">
+
+                <div class="p-4">
+                    <p class="text-gray-700 text-base mb-4">
+                        Confirm schedule deletion
+                    </p>
+
+                    <div class="flex justify-center gap-4">
+                        <p:commandButton value="Yes"
+                                         action="#{doctorBean.removeSpeciality}"
+                                         oncomplete="PF('deleteDlg').hide()"
+                                         update=":specialitiesForm"
+                                         styleClass="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"/>
+
+                        <p:commandButton value="Cancel"
+                                         onclick="PF('deleteDlg').hide(); return false;"
+                                         styleClass="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg"/>
+                    </div>
+                </div>
+            </p:dialog>
+        </h:form>
+
+        <h:form id="addSpecialitiesForm" styleClass="mb-8">
+            <div class="mb-6">
+                <div class="flex items-center text-lg font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-stethoscope text-indigo-600 text-xl mr-3"> </i>
+                    <span>You can add specialities with their billing data below</span>
+                </div>
             </div>
+            <div class="bg-white rounded-2xl shadow-md p-6 space-y-6 sm:space-y-0 sm:flex sm:items-end sm:justify-between sm:gap-6">
+                <div class="w-full sm:w-1/2">
+                    <label for="specialityName" class="block text-sm font-medium text-gray-700 mb-1">
+                        Speciality Name
+                    </label>
+                    <p:inputText id="specialityName"
+                                 value="#{doctorBean.newSpecName}"
+                                 required="true"
+                                 placeholder="e.g. Dermatology"
+                                 styleClass="w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg p-2"/>
+                </div>
 
-            <div class="mt-4 text-right space-x-2">
-                <p:commandButton value="Close" onclick="PF('dlgSpec').hide()" type="button"/>
-                <p:commandButton value="Save All" actionListener="#{doctorBean.saveSpecialities}"
-                                 update="specForm" oncomplete="PF('dlgSpec').hide()"/>
+                <div class="w-full sm:w-1/3">
+                    <label for="hourlyPrice" class="block text-sm font-medium text-gray-700 mb-1">
+                        Hourly Price (UGX)
+                    </label>
+                    <p:inputText id="hourlyPrice"
+                                 value="#{doctorBean.newHourlyPrice}"
+                                 required="true"
+                                 placeholder="e.g. 50000"
+                                 type="number"
+                                 styleClass="w-full border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 rounded-lg p-2"/>
+                </div>
+
+                <div class="w-full sm:w-auto mt-2 sm:mt-0">
+                    <p:commandButton value="Add"
+                                     icon="fas fa-plus-circle"
+                                     action="#{doctorBean.addSpeciality}"
+                                     process="@form"
+                                     update="addSpecialitiesForm :specialitiesForm"
+                                     styleClass="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg transition"/>
+                </div>
+
             </div>
         </h:form>
-    </p:dialog>
+
+    </div>
+
+    <ui:include src="./WEB-INF/templates/footer.xhtml" />
+
 </h:body>
 </html>
