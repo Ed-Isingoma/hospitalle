@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import org.hibernate.query.Query;
 
+import javax.persistence.TypedQuery;
+
 public class AuthDao extends GenericDao<Auth> {
     public AuthDao(){ super(Auth.class); }
 
@@ -29,15 +31,28 @@ public class AuthDao extends GenericDao<Auth> {
         }
     }
 
+    public List<Auth> findByUsernameContainingIgnoreCase(String query) {
+        try (Session session = HibernateUtil.getSession()) {
+            TypedQuery<Auth> q = session.createQuery(
+                    "SELECT p FROM Auth p WHERE LOWER(p.username) LIKE :pattern",
+                    Auth.class
+            );
+            q.setParameter("pattern", "%" + query.toLowerCase() + "%");
+            return q.getResultList();
+        } catch (HibernateException he) {
+            System.err.println("Error in finding matching patient: " + he.getMessage());
+            return Collections.emptyList();
+        }
+    }
+
     public List<Availability> findBookableSlots(Auth doctor) {
         try (Session session = HibernateUtil.getSession()) {
-            String hql = """
-            FROM Availability a
-            WHERE a.doctor = :doctor
-              AND a.start_time >= :now
-              AND a.appointment IS NULL
-            ORDER BY a.start_time ASC
-        """;
+
+            String hql = "SELECT a FROM Availability a LEFT JOIN a.appointment ap " +
+                        "WHERE a.doctor    = :doctor " +
+                        "  AND a.start_time >= :now    " +
+                        "  AND (ap IS NULL OR ap.accepted = false) " +
+                        "ORDER BY a.start_time ASC";
 
             return session.createQuery(hql, Availability.class)
                     .setParameter("doctor", doctor)
@@ -45,6 +60,7 @@ public class AuthDao extends GenericDao<Auth> {
                     .getResultList();
         }
     }
+
     public List<Auth> findByRole(String role) {
         try (Session s = HibernateUtil.getSession()) {
             String hql = "FROM Auth a WHERE a.role = :role";
