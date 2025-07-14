@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="Availabilities")
+@Table(name="availabilities")
 public class Availability {
     @Id @GeneratedValue
     private Long id;

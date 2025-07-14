@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name="Authentications")
+@Table(name="authentications")
 public class Auth {
     @Id @GeneratedValue
     private Long id;
