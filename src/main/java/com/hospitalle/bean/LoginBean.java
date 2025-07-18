@@ -1,15 +1,15 @@
 package com.hospitalle.bean;
 
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
+import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
 import com.hospitalle.models.Auth;
 import com.hospitalle.services.AuthService;
 
-@ManagedBean(name = "loginBean")
+@Named("loginBean")
 @SessionScoped
 public class LoginBean implements Serializable {
     @Serial

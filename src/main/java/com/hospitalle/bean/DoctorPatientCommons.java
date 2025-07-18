@@ -2,13 +2,18 @@ package com.hospitalle.bean;
 
 import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.Auth;
+import com.hospitalle.models.Availability;
 import com.hospitalle.services.AppointmentService;
 import com.hospitalle.services.AuthService;
 import com.hospitalle.util.FacesGuy;
 
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 public class DoctorPatientCommons {
 
@@ -17,26 +22,23 @@ public class DoctorPatientCommons {
     protected String  newEmail, newPassword, confirmNewPassword, currentPassword;
 
     protected final AppointmentService appointmentService   = new AppointmentService();
-    protected AppointmentDto updatedAppt;
     protected final AuthService authService = new AuthService();
 
     protected List<AppointmentDto> pendingAppts;
     protected List<AppointmentDto> upcomingAcceptedAppts;
     protected List<AppointmentDto> pastAcceptedAppts;
 
+    public List<Availability> getBookableSlots (Auth doctor) {
+        return authService.getBookableSlots(doctor);
+    }
+
     public void loadApptData() {
-        AppointmentService.AppointmentLists apptLists = appointmentService.findAppointments(me);
+        boolean isDoctor = me.getRole().equals("doctor");
+        AppointmentService.AppointmentLists apptLists = appointmentService.findAppointments(me, isDoctor);
         pendingAppts = apptLists.pendingFuture();
+//        System.out.println("This is the appt data: " + pendingAppts + upcomingAcceptedAppts + pastAcceptedAppts);
         upcomingAcceptedAppts = apptLists.acceptedFuture();
         pastAcceptedAppts = apptLists.acceptedPast();
-    }
-
-    public AppointmentDto getUpdatedAppt() {
-        return updatedAppt;
-    }
-
-    public void setUpdatedAppt(AppointmentDto updatedAppt) {
-        this.updatedAppt = updatedAppt;
     }
 
     public void deleteAccount() {
@@ -44,6 +46,18 @@ public class DoctorPatientCommons {
         authService.editOrDelete(me);
         FacesGuy.info("Deleting Account");
         logout();
+    }
+
+    public String formatTime(LocalDateTime timeObj) {
+        if (timeObj == null) return "";
+        return timeObj.format(DateTimeFormatter.ofPattern("MMM dd, yyyy 'at' h:mm a"));
+    }
+
+    public String formatMoney(Integer money) {
+        if (money == null) return "Unset";
+
+        NumberFormat formatter = NumberFormat.getNumberInstance(Locale.US);
+        return formatter.format(money) + " /=";
     }
 
     public String logout(){
@@ -78,6 +92,20 @@ public class DoctorPatientCommons {
         this.deleteAccount = deleteAccount;
     }
 
+    public String formatAvailabilities(LocalDateTime start, LocalDateTime end) {
+        if (start == null || end == null) {
+            return "Wrong-format date";
+        }
+
+        DateTimeFormatter dayFmt  = DateTimeFormatter.ofPattern("EEEE, MMM d");
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("hh:mm a");
+
+        String day      = start.format(dayFmt);
+        String fromTime = start.format(timeFmt);
+        String toTime   = end.format(timeFmt);
+
+        return String.format("%s (%s – %s)", day, fromTime, toTime);
+    }
 
     public String getNewEmail() {
         return newEmail;
