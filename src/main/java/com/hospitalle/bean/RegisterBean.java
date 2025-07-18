@@ -1,11 +1,17 @@
 package com.hospitalle.bean;
 
 import javax.enterprise.context.RequestScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.FacesContext;
+import javax.faces.validator.ValidatorException;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
 
-import com.hospitalle.services.AuthService;
+import com.hospitalle.services.impl.AuthServiceImpl;
 
 @Named("registerBean")
 @RequestScoped
@@ -13,47 +19,66 @@ public class RegisterBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private String username;
-    private String email;
-    private String password;
-    private String role;
+    protected String regUsername, regEmail, regPassword, regRole;
+    protected String regConfirmPassword;
 
-    private final AuthService authService = new AuthService();
+    @Inject
+    private AuthServiceImpl authServiceImpl;
 
     public String register() {
-        authService.register(username, email, password, role);
+        authServiceImpl.register(regUsername, regEmail, regPassword, regRole);
         return "login.xhtml?faces-redirect=true";
     }
 
-    public String getUsername() {
-        return username;
+    public void validateConfirmPassword(FacesContext ctx, UIComponent comp, Object value) {
+        String confirm = (value == null? "" : value.toString());
+        UIInput passInput = (UIInput) comp.findComponent("pass");
+        String original = (passInput.getValue()==null? "" : passInput.getValue().toString());
+        if (!original.equals(confirm)) {
+            throw new ValidatorException(
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                            "Passwords do not match",
+                            "Please make sure both passwords are identical"));
+        }
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public String getRegUsername() {
+        return regUsername;
     }
 
-    public String getEmail() {
-        return email;
+    public void setRegUsername(String regUsername) {
+        this.regUsername = regUsername;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getRegConfirmPassword() {
+        return regConfirmPassword;
     }
 
-    public String getPassword() {
-        return password;
+    public void setRegConfirmPassword(String regConfirmPassword) {
+        this.regConfirmPassword = regConfirmPassword;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public String getRegEmail() {
+        return regEmail;
     }
 
-    public String getRole() {
-        return role;
+    public void setRegEmail(String regEmail) {
+        this.regEmail = regEmail;
     }
 
-    public void setRole(String role) {
-        this.role = role;
+    public String getRegPassword() {
+        return regPassword;
+    }
+
+    public void setRegPassword(String regPassword) {
+        this.regPassword = regPassword;
+    }
+
+    public String getRegRole() {
+        return regRole;
+    }
+
+    public void setRegRole(String regRole) {
+        this.regRole = regRole;
     }
 }

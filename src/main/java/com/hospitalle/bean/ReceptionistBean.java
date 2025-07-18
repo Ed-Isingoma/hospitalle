@@ -3,171 +3,187 @@ package com.hospitalle.bean;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.*;
-import com.hospitalle.services.AdmissionService;
-import com.hospitalle.services.AuthService;
-import com.hospitalle.services.PaymentService;
-import com.hospitalle.services.ReceptionistService;
+import com.hospitalle.services.impl.AdmissionServiceImpl;
+import com.hospitalle.services.impl.AuthServiceImpl;
+import com.hospitalle.services.impl.PaymentServiceImpl;
+import com.hospitalle.services.impl.ReceptionistServiceImpl;
 import com.hospitalle.util.FacesGuy;
+import com.hospitalle.util.StringFormatter;
+import org.primefaces.event.RowEditEvent;
 
 @Named("receptionistBean")
 @SessionScoped
-public class ReceptionistBean implements Serializable {
+public class ReceptionistBean extends RegisterBean implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private List<Appointment> pastAppts, futureAppts;
+    private List<AppointmentDto> pastAppts, futureAppts;
     private List<Admission> admissions;
-    private List<Auth> doctors;
-    private List<Payment> payments;
-    private Auth me;
-    private List<Availability> availabilities;
+    private Auth usr;
     private boolean deleteAccount;
-    private String  newEmail, newPassword, admissionWard;
-    private int newPaymentAmount;
-    private LocalDateTime admissionStartTime;
-    private LocalDate newPaymentDate;
-    private Admission newPaymentAdmission, editingAdmission;
-    private Appointment newPaymentAppointment;
-    private Payment paymentInEdit;
-    private Long admissionPatientId;
+    private String  newEmail, newPassword;
+    private int admittedPatients, doctorsAvailable,
+            totalAppointmentsDone, totalUnpaidMoney, totalPaidMoney;
+    private Admission newAdmission;
 
-    private final ReceptionistService receptionistService = new ReceptionistService();
-    private final AuthService authService = new AuthService();
-    private final PaymentService paymentService = new PaymentService();
-    private final AdmissionService admissionService = new AdmissionService();
+    @Inject
+    private ReceptionistServiceImpl receptionistServiceImpl;
+    @Inject
+    private AuthServiceImpl authServiceImpl;
+    @Inject
+    private PaymentServiceImpl paymentServiceImpl;
+    @Inject
+    private AdmissionServiceImpl admissionServiceImpl;
 
     @PostConstruct
     public void init() {
-        me = (Auth) FacesContext.getCurrentInstance()
+        usr = (Auth) FacesContext.getCurrentInstance()
                 .getExternalContext().getSessionMap().get("user");
+        List<Auth> doctors = receptionistServiceImpl.getAllDoctors();
+        doctorsAvailable = doctors.size();
+        loadTotals();
+        newAdmission = new Admission();
+    }
 
-        pastAppts = receptionistService.getPastAppointments();
-        futureAppts = receptionistService.getFutureAppointments();
-        admissions = receptionistService.getAllAdmissions();
-        doctors = receptionistService.getAllDoctors();
-        availabilities = receptionistService.getAllAvailabilities();
-        payments = paymentService.getPayments();
+    public void loadTotals() {
+        pastAppts = receptionistServiceImpl.getPastAppointments();
+        futureAppts = receptionistServiceImpl.getFutureAppointments();
+        admissions = receptionistServiceImpl.getAllAdmissions();
+        admittedPatients = admissions.size();
+        totalAppointmentsDone = pastAppts.size();
+        totalUnpaidMoney = pastAppts.stream().filter(ap -> !ap.isPaid())
+                .mapToInt(AppointmentDto::getBill).sum() +
+                futureAppts.stream().filter(ap -> !ap.isPaid())
+                        .mapToInt(AppointmentDto::getBill).sum() +
+                admissions.stream().filter(ad -> ad.getPayment() == null)
+                        .mapToInt(Admission::getBill).sum();
+
+        totalPaidMoney = pastAppts.stream().filter(AppointmentDto::isPaid)
+                .mapToInt(AppointmentDto::getBill).sum() +
+                futureAppts.stream().filter(AppointmentDto::isPaid)
+                        .mapToInt(AppointmentDto::getBill).sum() +
+                admissions.stream().filter(ad -> ad.getPayment() != null)
+                        .mapToInt(Admission::getBill).sum();
     }
 
     public String deleteAccount() {
-        me.setDeleted(deleteAccount);
-        authService.editOrDelete(me);
+        usr.setDeleted(deleteAccount);
+        authServiceImpl.editOrDelete(usr);
         FacesGuy.info("Account Deleted!");
         return "login.xhtml?faces-redirect=true";
     }
 
     public void editProfile() {
-        me.setEmail(newEmail);
-        me.setPassword(newPassword);
-        authService.editOrDelete(me);
+        usr.setEmail(newEmail);
+        usr.setPassword(newPassword);
+        authServiceImpl.editOrDelete(usr);
         FacesGuy.info("Editing profile successful");
     }
 
-    public void createPayment() {
-        Long id = paymentService.newPayment(newPaymentAdmission, newPaymentAppointment, newPaymentAmount, newPaymentDate);
-        if (id != null) {
-            FacesGuy.info("Payment Added");
-        } else {
-            FacesGuy.error("Payment failed to be saved");
-        }
+    public void createPatientAction() {
+        authServiceImpl.register(regUsername, regEmail, regPassword, "patient");
+        FacesGuy.info("mainForm:admissionEditor", "New patient “" + regUsername + "” has been registered");
+        regUsername = regEmail = regPassword = regConfirmPassword = regRole = null;
     }
 
-    public void newAdmission() {
-        Long id = admissionService.newAdmission(admissionStartTime, admissionWard, admissionPatientId);
-        if (id != null) {
-            FacesGuy.info("Admission Added");
-        } else {
-            FacesGuy.error("Admission failed to be created");
-        }
+    public void addAdmissionPayment(Admission adm){
+        Long id = paymentServiceImpl.newPayment(adm);
+        loadTotals();
+        FacesGuy.info("Admission record modified");
     }
 
-    public void editAdmission() {
-        admissionService.editAdmission(editingAdmission);
-        FacesGuy.info("Admission edited");
-    }
-    public LocalDateTime getAdmissionStartTime() {
-        return admissionStartTime;
+    public void addApptPayment(AppointmentDto appt) {
+        Long id = paymentServiceImpl.newPayment(appt);
+        loadTotals();
     }
 
-    public Admission getEditingAdmission() {
-        return editingAdmission;
+    public String formatTime(LocalDateTime time) {
+        return StringFormatter.formatTime(time);
     }
 
-    public void setEditingAdmission(Admission editingAdmission) {
-        this.editingAdmission = editingAdmission;
+    public String formatMoney(Integer money) {
+        return StringFormatter.formatMoney(money);
     }
 
-    public void setAdmissionStartTime(LocalDateTime admissionStartTime) {
-        this.admissionStartTime = admissionStartTime;
+    public void newAdmissionAction() {
+        admissionServiceImpl.newAdmission(newAdmission);
+        loadTotals();
+        FacesGuy.info("mainForm:admissionEditor", "Admission has been added for “" +
+                newAdmission.getPatient().getUsername() + "”");
+
+        newAdmission = new Admission();
     }
 
-    public String getAdmissionWard() {
-        return admissionWard;
+    public List<Auth> completePatients(String query) {
+        return authServiceImpl.completePatients(query);
     }
 
-    public void setAdmissionWard(String admissionWard) {
-        this.admissionWard = admissionWard;
+    public void editAdmission(RowEditEvent<Admission> event) {
+        Admission adm = event.getObject();
+        admissionServiceImpl.editAdmission(adm);
+        loadTotals();
+        FacesGuy.info("mainForm:admissionEditor", "Admission updated");
     }
 
-    public Long getAdmissionPatientId() {
-        return admissionPatientId;
+    public void onRowCancel() {
+        FacesGuy.error("mainForm:admissionEditor", "Edit cancelled");
     }
 
-    public void setAdmissionPatientId(Long admissionPatientId) {
-        this.admissionPatientId = admissionPatientId;
+    public int getAdmittedPatients() {
+        return admittedPatients;
     }
 
-    public void editPayment() {
-        paymentService.editPayment(paymentInEdit);
-        FacesGuy.info("Payment Edited");
+    public void setAdmittedPatients(int admittedPatients) {
+        this.admittedPatients = admittedPatients;
     }
 
-    public int getNewPaymentAmount() {
-        return newPaymentAmount;
+    public int getDoctorsAvailable() {
+        return doctorsAvailable;
     }
 
-    public void setNewPaymentAmount(int newPaymentAmount) {
-        this.newPaymentAmount = newPaymentAmount;
+    public void setDoctorsAvailable(int doctorsAvailable) {
+        this.doctorsAvailable = doctorsAvailable;
     }
 
-    public LocalDate getNewPaymentDate() {
-        return newPaymentDate;
+    public int getTotalAppointmentsDone() {
+        return totalAppointmentsDone;
     }
 
-    public void setNewPaymentDate(LocalDate newPaymentDate) {
-        this.newPaymentDate = newPaymentDate;
+    public void setTotalAppointmentsDone(int totalAppointmentsDone) {
+        this.totalAppointmentsDone = totalAppointmentsDone;
     }
 
-    public Admission getNewPaymentAdmission() {
-        return newPaymentAdmission;
+    public int getTotalUnpaidMoney() {
+        return totalUnpaidMoney;
     }
 
-    public void setNewPaymentAdmission(Admission newPaymentAdmission) {
-        this.newPaymentAdmission = newPaymentAdmission;
+    public void setTotalUnpaidMoney(int totalUnpaidMoney) {
+        this.totalUnpaidMoney = totalUnpaidMoney;
     }
 
-    public Appointment getNewPaymentAppointment() {
-        return newPaymentAppointment;
+    public int getTotalPaidMoney() {
+        return totalPaidMoney;
     }
 
-    public void setNewPaymentAppointment(Appointment newPaymentAppointment) {
-        this.newPaymentAppointment = newPaymentAppointment;
+    public void setTotalPaidMoney(int totalPaidMoney) {
+        this.totalPaidMoney = totalPaidMoney;
     }
 
-    public Payment getPaymentInEdit() {
-        return paymentInEdit;
+    public Admission getNewAdmission() {
+        return newAdmission;
     }
 
-    public void setPaymentInEdit(Payment paymentInEdit) {
-        this.paymentInEdit = paymentInEdit;
+    public void setNewAdmission(Admission newAdmission) {
+        this.newAdmission = newAdmission;
     }
 
     public boolean isDeleteAccount() {
@@ -194,30 +210,12 @@ public class ReceptionistBean implements Serializable {
         this.newPassword = newPassword;
     }
 
-    public List<Payment> getPayments() {
-        return payments;
-    }
-
-    public void setPayments(List<Payment> payments) {
-        this.payments = payments;
-    }
-
-    public Auth getMe() { return me; }
-
-    public List<Appointment> getPastAppts() {
+    public List<AppointmentDto> getPastAppts() {
         return pastAppts;
     }
 
-    public void setPastAppts(List<Appointment> pastAppts) {
-        this.pastAppts = pastAppts;
-    }
-
-    public List<Appointment> getFutureAppts() {
+    public List<AppointmentDto> getFutureAppts() {
         return futureAppts;
-    }
-
-    public void setFutureAppts(List<Appointment> futureAppts) {
-        this.futureAppts = futureAppts;
     }
 
     public List<Admission> getAdmissions() {
@@ -228,19 +226,4 @@ public class ReceptionistBean implements Serializable {
         this.admissions = admissions;
     }
 
-    public List<Auth> getDoctors() {
-        return doctors;
-    }
-
-    public void setDoctors(List<Auth> doctors) {
-        this.doctors = doctors;
-    }
-
-    public List<Availability> getAvailabilities() {
-        return availabilities;
-    }
-
-    public void setAvailabilities(List<Availability> availabilities) {
-        this.availabilities = availabilities;
-    }
 }
