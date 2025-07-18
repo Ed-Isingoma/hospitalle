@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name="Appointment")
+@Table(name="appointment")
 public class Appointment {
     @Id @GeneratedValue
     private Long id;
@@ -33,14 +33,6 @@ public class Appointment {
 
     public Availability getAvailability() {
         return availability;
-    }
-
-    public boolean isAccepted() {
-        return accepted;
-    }
-
-    public String getPatient_feedback() {
-        return patient_feedback;
     }
 
     public void setPatient_feedback(String patient_feedback) {

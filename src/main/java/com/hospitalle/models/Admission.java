@@ -4,12 +4,13 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="Admissions")
+@Table(name="admissions")
 public class Admission {
     @Id @GeneratedValue
     private Long id;
     private LocalDateTime start_time, discharge_date;
     private String ward;
+    private int bill;
 
     @ManyToOne
     @JoinColumn(name="patient")
@@ -17,6 +18,14 @@ public class Admission {
 
     @OneToOne(mappedBy="admission")
     private Payment payment;
+
+    public int getBill() {
+        return bill;
+    }
+
+    public void setBill(int bill) {
+        this.bill = bill;
+    }
 
     public Payment getPayment() {
         return payment;
