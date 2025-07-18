@@ -11,9 +11,23 @@ public class FacesGuy {
         );
     }
 
+    public static void info(String formClientId, String message) {
+        FacesContext.getCurrentInstance().addMessage(
+                formClientId,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", message)
+        );
+    }
+
     public static void error(String message) {
         FacesContext.getCurrentInstance().addMessage(
                 null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", message)
+        );
+    }
+
+    public static void error(String formClientId, String message) {
+        FacesContext.getCurrentInstance().addMessage(
+                formClientId,
                 new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", message)
         );
     }

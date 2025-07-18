@@ -10,6 +10,7 @@ import java.util.*;
 public abstract class GenericDao<T> {
     private final Class<T> theTable;
 
+
     protected GenericDao(Class<T> theTable) {
         this.theTable = theTable;
     }

@@ -1,18 +1,21 @@
 package com.hospitalle.dao;
 
+import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.Appointment;
 import com.hospitalle.models.Payment;
+import com.hospitalle.services.impl.AppointmentServiceImpl;
 import com.hospitalle.util.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class AppointmentDao extends GenericDao<Appointment> {
     public AppointmentDao(){ super(Appointment.class); }
 
-    public List<Appointment> findPastAppointments() {
+    public List<AppointmentDto> findPastAppointments() {
         try (Session session = HibernateUtil.getSession()) {
             String hql = """
             SELECT DISTINCT a
@@ -20,22 +23,12 @@ public class AppointmentDao extends GenericDao<Appointment> {
             JOIN a.availability av
             WHERE av.start_time < :now
         """;
-            return session.createQuery(hql, Appointment.class)
+            List<Appointment> appts = session.createQuery(hql, Appointment.class)
                     .setParameter("now", LocalDateTime.now())
                     .getResultList();
-        }
-    }
 
-    public List<Payment> findPaymentsForAppts(List<Long> ids) {
-        try (Session session = HibernateUtil.getSession()) {
-            String hql = """
-            SELECT p
-            FROM Payment p
-            WHERE p.appointment.id IN (:ids)
-            """;
-            return session.createQuery(hql, Payment.class)
-                    .setParameter("ids", ids)
-                    .getResultList();
+            return appts.stream().map(ap-> AppointmentServiceImpl.assignDto(ap, ap.getAvailability()))
+                    .collect(Collectors.toList());
         }
     }
 
@@ -52,7 +45,7 @@ public class AppointmentDao extends GenericDao<Appointment> {
         }
     }
 
-    public List<Appointment> findFutureAppointments() {
+    public List<AppointmentDto> findFutureAppointments() {
         try (Session session = HibernateUtil.getSession()) {
             String hql = """
             SELECT DISTINCT a
@@ -60,9 +53,13 @@ public class AppointmentDao extends GenericDao<Appointment> {
             JOIN a.availability av
             WHERE av.start_time >= :now
         """;
-            return session.createQuery(hql, Appointment.class)
+            List<Appointment> appts = session.createQuery(hql, Appointment.class)
                     .setParameter("now", LocalDateTime.now())
                     .getResultList();
+
+            return appts.stream().map(ap-> AppointmentServiceImpl.assignDto(ap, ap.getAvailability()))
+                    .collect(Collectors.toList());
         }
     }
+
 }
