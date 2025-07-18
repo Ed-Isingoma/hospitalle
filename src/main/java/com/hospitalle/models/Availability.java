@@ -10,7 +10,7 @@ public class Availability {
     private Long id;
     private LocalDateTime start_time, end_time;
 
-    @ManyToOne @JoinColumn(name="appointment")
+    @OneToOne @JoinColumn(name="appointment")
     private Appointment appointment;
 
     @ManyToOne @JoinColumn(name="doctor")

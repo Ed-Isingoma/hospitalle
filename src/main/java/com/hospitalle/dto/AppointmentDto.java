@@ -9,13 +9,30 @@ public class AppointmentDto implements Serializable {
     private Long id;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String symptoms;
-    private String diagnosis;
-    private String prescription;
-    private String patientFeedback;
-    private Auth patient, doctor;
-    private Speciality speciality;
-    private boolean accepted;
+    private String diagnosis, prescription, patientFeedback, patient, doctor;
+    private String speciality;
+    private boolean accepted, paid;
+    private int bill;
+
+    public int getBill() {
+        return bill;
+    }
+
+    public void setBill(int bill) {
+        this.bill = bill;
+    }
+
+    public boolean isAccepted() {
+        return accepted;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -29,9 +46,6 @@ public class AppointmentDto implements Serializable {
     public LocalDateTime getEndTime() { return endTime; }
     public void setEndTime(LocalDateTime endTime) { this.endTime = endTime; }
 
-    public String getSymptoms() { return symptoms; }
-    public void setSymptoms(String symptoms) { this.symptoms = symptoms; }
-
     public String getDiagnosis() { return diagnosis; }
     public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
 
@@ -41,13 +55,13 @@ public class AppointmentDto implements Serializable {
     public String getPatientFeedback() { return patientFeedback; }
     public void setPatientFeedback(String patientFeedback) { this.patientFeedback = patientFeedback; }
 
-    public Auth getPatient() { return patient; }
-    public void setPatient(Auth patient) { this.patient = patient; }
+    public String getPatient() { return patient; }
+    public void setPatient(String patient) { this.patient = patient; }
 
-    public Auth getDoctor() { return doctor; }
-    public void setDoctor(Auth doctor) { this.doctor = doctor; }
+    public String getDoctor() { return doctor; }
+    public void setDoctor(String doctor) { this.doctor = doctor; }
 
-    public Speciality getSpeciality() { return speciality; }
-    public void setSpeciality(Speciality speciality) { this.speciality = speciality; }
+    public String getSpeciality() { return speciality; }
+    public void setSpeciality(String speciality) { this.speciality = speciality; }
 }
 

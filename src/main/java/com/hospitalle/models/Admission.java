@@ -1,29 +1,40 @@
 package com.hospitalle.models;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name="Admissions")
 public class Admission {
     @Id @GeneratedValue
     private Long id;
-    private LocalDate start_date, discharge_date;
+    private LocalDateTime start_time, discharge_date;
     private String ward;
 
     @ManyToOne
     @JoinColumn(name="patient")
     private Auth patient;
 
+    @OneToOne(mappedBy="admission")
+    private Payment payment;
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
     public Long getId() {
         return id;
     }
 
-    public LocalDate getStartTime() {
-        return start_date;
+    public LocalDateTime getStart_time() {
+        return start_time;
     }
 
-    public LocalDate getDischargeDate() {
+    public LocalDateTime getDischarge_date() {
         return discharge_date;
     }
 
@@ -39,11 +50,11 @@ public class Admission {
         this.id = id;
     }
 
-    public void setStartTime(LocalDate start_date) {
-        this.start_date = start_date;
+    public void setStart_time(LocalDateTime start_time) {
+        this.start_time = start_time;
     }
 
-    public void setDischargeDate(LocalDate discharge_date) {
+    public void setDischarge_date(LocalDateTime discharge_date) {
         this.discharge_date = discharge_date;
     }
 
