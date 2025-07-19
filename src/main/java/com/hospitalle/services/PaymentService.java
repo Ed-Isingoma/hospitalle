@@ -1,30 +1,18 @@
 package com.hospitalle.services;
 
-import com.hospitalle.dao.PaymentDao;
 import com.hospitalle.models.Admission;
-import com.hospitalle.models.Appointment;
+import com.hospitalle.dto.AppointmentDto;
 import com.hospitalle.models.Payment;
 
-import java.time.LocalDate;
+import java.io.Serializable;
 import java.util.List;
 
-public class PaymentService {
-    private final PaymentDao paymentDao = new PaymentDao();
+public interface PaymentService extends Serializable {
+    List<Payment> getPayments();
 
-    public List<Payment> getPayments() {
-        return paymentDao.findAll();
-    }
+    void editPayment(Payment edit);
 
-    public Long newPayment(Admission newAdm, Appointment newAppt, int newAmt, LocalDate newDate) {
-        Payment pay = new Payment();
-        pay.setAdmission(newAdm);
-        pay.setAppointment(newAppt);
-        pay.setAmount(newAmt);
-        pay.setPaymentDate(newDate);
-        return paymentDao.save(pay);
-    }
+    public Long newPayment(Admission newAdm);
+    public Long newPayment(AppointmentDto newAppt);
 
-    public void editPayment(Payment edit) {
-        paymentDao.update(edit);
-    }
 }
