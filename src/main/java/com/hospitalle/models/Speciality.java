@@ -3,7 +3,7 @@ package com.hospitalle.models;
 import javax.persistence.*;
 
 @Entity
-@Table(name="Specialities")
+@Table(name="specialities")
 public class Speciality {
     @Id @GeneratedValue
     private Long id;
