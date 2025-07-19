@@ -4,11 +4,10 @@ import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name="Payments")
+@Table(name="payments")
 public class Payment {
     @Id @GeneratedValue
     private Long id;
-    private int amount;
     private LocalDate payment_date;
 
     @OneToOne @JoinColumn(name="appointment")
@@ -19,10 +18,6 @@ public class Payment {
 
     public Long getId() {
         return id;
-    }
-
-    public int getAmount() {
-        return amount;
     }
 
     public LocalDate getPaymentDate() {
@@ -39,10 +34,6 @@ public class Payment {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
     }
 
     public void setPaymentDate(LocalDate payment_date) {
